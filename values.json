@@ -1,0 +1,165 @@
+{
+    "f1": {
+        "name": "Formula 1",
+        "sub_event": {
+            "FP1": {
+                "full_name": "First Practice Session",
+                "duration": "1:00"
+            },
+            "FP2": {
+                "full_name": "Second Practice Session",
+                "duration": "1:00"
+            },
+            "FP3": {
+                "full_name": "Third Practice Session",
+                "duration": "1:00"
+            },
+            "QU": {
+                "full_name": "Qualifying",
+                "duration": "1:00"
+            },
+            "Sprint QU": {
+                "full_name": "Sprint Qualifying",
+                "duration": "0:30"
+            },
+            "Sprint": {
+                "full_name": "Sprint",
+                "duration": "0:30"
+            },
+            "Race": {
+                "full_name": "Race",
+                "duration": "2:00"
+            }
+        }
+    },
+    "motoGP": {
+        "name": "Moto GP",
+        "sub_event": {
+            "FP1": {
+                "full_name": "First Practice Session",
+                "duration": "0:45"
+            },
+            "FP2": {
+                "full_name": "Second Practice Session",
+                "duration": "0:45"
+            },
+            "FP3": {
+                "full_name": "Third Practice Session",
+                "duration": "0:45"
+            },
+            "FP4": {
+                "full_name": "Fourth Practice Session",
+                "duration": "0:30"
+            },
+            "Q1": {
+                "full_name": "First Qualifying Session",
+                "duration": "0:15"
+            },
+            "Q2": {
+                "full_name": "Second Qualifying Session",
+                "duration": "0:15"
+            },
+            "Warm Up": {
+                "full_name": "Warm Up",
+                "duration": "0:20"
+            },
+            "Race": {
+                "full_name": "Race",
+                "duration": "0:45"
+            }
+        }
+    },
+    "wec": {
+        "name": "WEC",
+        "sub_event": {
+            "FP1": {
+                "full_name": "First Practice Session",
+                "duration": "1:00"
+            },
+            "FP2": {
+                "full_name": "Second Practice Session",
+                "duration": "1:00"
+            },
+            "FP3": {
+                "full_name": "Third Practice Session",
+                "duration": "1:00"
+            },
+            "Q1": {
+                "full_name": "First Qualifying Session",
+                "duration": "0:10"
+            },
+            "Q2": {
+                "full_name": "Second Qualifying Session",
+                "duration": "0:10"
+            },
+            "Race": {
+                "full_name": "Race",
+                "duration": "6:00"
+            }
+        }
+    },
+    "lemans": {
+        "name": "Le Mans",
+        "sub_event": {
+            "FP1": {
+                "full_name": "First Practice Session",
+                "duration": "2:00"
+            },
+            "FP2": {
+                "full_name": "Second Practice Session",
+                "duration": "2:00"
+            },
+            "FP3": {
+                "full_name": "Third Practice Session",
+                "duration": "2:00"
+            },
+            "FP4": {
+                "full_name": "Third Practice Session",
+                "duration": "2:00"
+            },
+            "Q1": {
+                "full_name": "First Qualifying Session",
+                "duration": "1:00"
+            },
+            "Hyperpole": {
+                "full_name": "Hyperpole",
+                "duration": "0:10"
+            },
+            "Race": {
+                "full_name": "Race",
+                "duration": "24:00"
+            },
+            "Race 1": {
+                "full_name": "Race 1",
+                "duration": "2:00"
+            },
+            "Race 2": {
+                "full_name": "Race 2",
+                "duration": "2:00"
+            }
+        }
+    },
+    "wrc": {
+        "name": "WRC",
+        "Shakedown": {
+            "full_name": "Shakedown",
+            "duration": "2:00"
+        },
+        "Day 1": {
+            "full_name": "Day 1",
+            "duration": "4:00"
+        },
+        "Day 2": {
+            "full_name": "Day 2",
+            "duration": "4:00"
+        },
+        "Day 3": {
+            "full_name": "Day 3",
+            "duration": "4:00"
+        },
+        "Day 4": {
+            "full_name": "Day 4",
+            "duration": "4:00"
+        }
+    }
+}
