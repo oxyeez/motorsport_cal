@@ -1,6 +1,6 @@
 # Motorsport Calendar
 
-A python script that scrap the website [www.motorsport.com](www.motorsport.com) 
+A python script that scrap the website [motorsport.com](https://motorsport.com) 
 and add requested motorsport event to a google calendar.
 
 ## Required
