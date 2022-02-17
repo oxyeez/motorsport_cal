@@ -5,7 +5,7 @@ and add requested motorsport event to a google calendar.
 
 ## Required
 
-The prerequisites shown [here](https://developers.google.com/calendar/api/quickstart/python).
+The prerequisites and the first step of this quickstart [here](https://developers.google.com/calendar/api/quickstart/python).
 
 Copy the credential .json file in the project directory and rename it credential.json.
 
