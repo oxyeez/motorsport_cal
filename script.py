@@ -157,6 +157,7 @@ def main():
     else: 
         schedule = {}
     
+    schedule = clear_schedule(schedule)
     for serie, wanted in CONFIG['wanted_series'].items():
         if wanted:
             schedule = update_serie_schedule(schedule, serie)

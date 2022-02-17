@@ -4,7 +4,7 @@
     "SCOPES": [
         "https://www.googleapis.com/auth/calendar"
     ],
-    "calendar_id": "",
+    "calendar_id": "primary",
     "wanted_series": {
         "f1": false,
         "motogp": false,
