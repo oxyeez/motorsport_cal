@@ -69,9 +69,9 @@ def write_event2cal(race_serie, event, sub_event, service):
 
     
 def clear_schedule(schedule):
-    for race_serie in schedule:
+    for race_serie in schedule.values():
         for event in reversed(race_serie):
-            if datetime.fromisoformat(event['date']) + timedelta(days=1) < datetime.now():
+            if datetime.fromisoformat(event['date']).date() < datetime.now().date():
                 race_serie.remove(event)
     return schedule
 
