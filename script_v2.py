@@ -332,13 +332,12 @@ def main():
     end_scraping = time.time()
     print(f"Scraping done in {end_scraping - start_scraping} seconds")
 
-    write_schedule(schedule)
-
     start_writing2cal = time.time()
     add_events2cal(schedule)
     end_writing2cal = time.time()
     print(f"Writing to calendar done in {end_writing2cal - start_writing2cal} seconds")
 
+    write_schedule(schedule)
 
 if __name__ == "__main__":
     main()
