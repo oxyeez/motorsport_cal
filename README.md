@@ -6,6 +6,7 @@ A python script that scrap the websites of the different motorsport series :
 - [WRC](https://www.wrc.com/en/championship/calendar/wrc/)  
 - [Endurance (not official)](https://www.endurance-info.com/calendrier)  
 - `new series incomming...`  
+
 and add requested motorsport event to a google calendar.  
 
 ## Required
