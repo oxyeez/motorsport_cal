@@ -84,7 +84,7 @@ def create_sub_event(serie, event, sub_event):
             'dateTime': sub_event['start_time']
             },
         'end': {
-            'dateTime': sub_event['start_time']
+            'dateTime': sub_event['end_time']
             }
         }
     return cal_event
