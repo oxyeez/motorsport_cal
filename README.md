@@ -1,6 +1,11 @@
 # Motorsport Calendar
 
-A python script that scrap the website [motorsport.com](https://motorsport.com) 
+A python script that scrap the websites of the different motorsport series :
+    - [Formula 1](https://www.formula1.com/en/racing/2022.html)
+    - [MotoGP - Moto2 - Moto3](https://www.motogp.com/en/calendar)
+    - [WRC](https://www.wrc.com/en/championship/calendar/wrc/)
+    - [Endurance (not official)](https://www.endurance-info.com/calendrier)
+    - `new series incomming...`
 and add requested motorsport event to a google calendar.
 
 ## Required
@@ -11,9 +16,9 @@ Copy the credential .json file in the project directory and rename it credential
 
 ## Before first run
 
-In the config.json file, set to `true` the motorsport series for which one you want to add events to your calendar.
+In the choices.json file, set to `true` the motorsport series for which one you want to add events to your calendar.
 
-You can add the id of a particular calendar in the config.json file.
+You can add the id of a particular google calendar in the config.json file.
 
 ## On first run
 
