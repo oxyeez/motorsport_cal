@@ -4,12 +4,5 @@
     "SCOPES": [
         "https://www.googleapis.com/auth/calendar"
     ],
-    "calendar_id": "primary",
-    "wanted_series": {
-        "f1": false,
-        "motogp": false,
-        "lemans": false,
-        "wec": false,
-        "wrc": false
-    }
+    "calendar_id": "primary"
 }

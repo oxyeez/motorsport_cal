@@ -1,0 +1,29 @@
+{
+  "f1": { "name": "Formula 1", "track": false },
+  "motogp": { "name": "Moto GP", "track": false },
+  "moto2": { "name": "Moto 2", "track": false },
+  "moto3": { "name": "Moto 3", "track": false },
+  "wrc": { "name": "WRC", "track": false },
+  "endurance": {
+    "track_all": false,
+    "series": {
+      "wec": { "name": "WEC", "track": false, "url_code": 137 },
+      "24lemans": { "name": "24h of Le Mans", "track": false, "url_code": 45 },
+      "supergt": { "name": "Super GT", "track": false, "url_code": 89 },
+      "eulemans": { "name": "European Le Mans Series", "track": false, "url_code": 10 },
+      "asianlemans": { "name": "Asian Le Mans Series", "track": false, "url_code": 37 },
+      "gtworldeu": { "name": "GT World Challenge Europe", "track": false, "url_code": 39 },
+      "ucs": { "name": "Ultimate Cup Series", "track": false, "url_code": 140 },
+      "24series": { "name": "24h Series", "track": false, "url_code": 61 },
+      "dtm": { "name": "DTM", "track": false, "url_code": 55 },
+      "ffsagt": { "name": "FFSA GT", "track": false, "url_code": 117 },
+      "gt4eu": { "name": "GT4 European Series", "track": false, "url_code": 86 },
+      "gulf12": { "name": "Gulf 12 hours", "track": false, "url_code": 67 },
+      "imsa": { "name": "IMSA", "track": false, "url_code": 53 },
+      "intergtchal": { "name": "Intercontinental GT Challenge", "track": false, "url_code": 41 },
+      "intergtopen": { "name": "Intercontinental GT Open", "track": false, "url_code": 52 },
+      "ligiereu": { "name": "Ligier European Series", "track": false, "url_code": 42 },
+      "adacgtmaster": { "name": "ADAC GT Master", "track": false, "url_code": 54 }
+    }
+  }
+}
