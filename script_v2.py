@@ -295,6 +295,44 @@ def update_endurance_schedule(serie, schedule):
     return schedule
 
 
+## Indicar functions
+def update_indicar_schedule(schedule):
+    if 'indicar' not in schedule:
+        schedule['indicar'] = []
+    
+    url = 'https://www.indycar.com/Schedule'
+    print(f"Loading from url : {url} ...")
+
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+    for event in soup.find('div', 'schedule-list').find_all('li', 'schedule-list__item'):
+        url = f"https://www.indycar.com{event.find('a', 'panel-trigger schedule-list__title').get('href')}"
+        title = event.find('a', 'panel-trigger schedule-list__title').find('span').text.replace('\n', '').strip()
+        end_date = datetime.steptime(f"{event.find('div', 'schedule-list__date').text.strip()} {datetime.now().year}", '%d %b %Y')
+        start_date = (end_date - timedelta(days=2)).isoformat()
+        end_date = end_date.isoformat()
+
+        if (len(schedule['indicar']) == 0 or not any(event['title'] == title for event in schedule['indicar'])) and end_date.date() > datetime.today().date():
+            schedule['indicar'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
+
+    return schedule
+
+
+def add_indicar_sub_events(schedule):
+    for event in schedule['indicar']:
+        if event['url'] is not None and event['url'] != '':
+            url = event['url']
+            soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+            for div in soup.find_all('div', 'detail-section'):
+                if 'Weekend Schedule/Results' in div.text:
+                    for sub_event in div.find('div', 'race-list').find_all('div', 'race-list__item'):
+                        title = sub_event.find('div', 'race-list__race text').text.replace('\n', '').strip()
+                        start_time = f""
+                        end_time = f""
+
+
+
 ## Main
 def main():
     global CHOICES, CONFIG
