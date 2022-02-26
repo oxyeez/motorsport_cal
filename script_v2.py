@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from pprint import pprint
 from random import choices
 
-import dateparser
+import locale
 import requests
 from bs4 import BeautifulSoup
 from google.auth.transport.requests import Request
@@ -284,10 +284,11 @@ def update_endurance_schedule(serie, schedule):
     for event in cal.find_all('div', 'views-row'):
         title = event.find('div', 'field field--name-title field--type-string field__item').text.replace('\n', '').strip()
         dates = event.find('div', 'date')
-        start_date = re.search('(\d{1,2}\s[a-zûé]{3,4})', dates.find('div', 'field field--name-field-beginning-date field--type-datetime field__item').text.strip()).group(0)
-        start_date = dateparser.parse(f"{start_date} {datetime.now().year}")
-        end_date = re.search('(\d{1,2}\s[a-zûé]{3,4})', dates.find('div', 'field field--name-field-ending-date field--type-datetime field__item').text.strip()).group(0)
-        end_date = dateparser.parse(f"{end_date} {datetime.now().year}")
+        start_date = re.search('(\d{1,2}\s[a-zûé]{3})', dates.find('div', 'field field--name-field-beginning-date field--type-datetime field__item').text.replace('juil', 'jul').strip()).group(0)
+        locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+        start_date = datetime.strptime(f"{start_date} {datetime.now().year}", '%d %b %Y')
+        end_date = re.search('(\d{1,2}\s[a-zûé]{3})', dates.find('div', 'field field--name-field-ending-date field--type-datetime field__item').text.replace('juil', 'jul').strip()).group(0)
+        end_date = datetime.strptime(f"{end_date} {datetime.now().year}", '%d %b %Y')
 
         if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
             schedule[serie].append({'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
