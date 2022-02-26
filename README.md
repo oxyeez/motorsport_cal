@@ -42,20 +42,18 @@ For those who just want to subscribe to some calendars and add theme to your own
 - [Moto 3](https://calendar.google.com/calendar/ical/l7messjqqunqm35gn49u6co13c%40group.calendar.google.com/public/basic.ics)  
 - [WRC](https://calendar.google.com/calendar/ical/lakpim3e6u2e2v9jlkcka3d27g%40group.calendar.google.com/public/basic.ics)  
 - [All Endurance Series](https://calendar.google.com/calendar/ical/33fk4udv5a61bgq7jei17mrh18%40group.calendar.google.com/public/basic.ics)  
-- [WEC](https://calendar.google.com/calendar/ical/5j8vvpa2kfrq8eetgq5d4o03vk%40group.calendar.google.com/public/basic.ics)  
-<!-- - [24h of Le Mans (also included in WEC)]()   -->
-- [Super GT](https://calendar.google.com/calendar/ical/pvu6u4d1d2kfc0ur4ia7gfo278%40group.calendar.google.com/public/basic.ics)  
-- [European Le Mans Series](https://calendar.google.com/calendar/ical/ieqsec5qnrlmff5u7rsl6c0d3s%40group.calendar.google.com/public/basic.ics)  
-<!-- - [Asian Le Mans Series]()   -->
-- [GT World Challenge Europe](https://calendar.google.com/calendar/ical/on1bf7bpmi0873u3j2n91edj90%40group.calendar.google.com/public/basic.ics)  
-- [Ultimate Cup Series](https://calendar.google.com/calendar/ical/ikh2j99pv63p2jchlvbuoh7vqk%40group.calendar.google.com/public/basic.ics)  
-<!-- - [24h Series]()  
-- [DTM]()   -->
-- [FFSA GT](https://calendar.google.com/calendar/ical/sd8ul89d8kd2a35rsfh8tulnck%40group.calendar.google.com/public/basic.ics)  
-- [GT4 European Series](https://calendar.google.com/calendar/ical/2etdssca8e864ukmn1kdfb3mm4%40group.calendar.google.com/public/basic.ics)  
-- [Gulf 12 hours](https://calendar.google.com/calendar/ical/i0dh0n24piv1cmhcdr69trac94%40group.calendar.google.com/public/basic.ics)  
-- [IMSA](https://calendar.google.com/calendar/ical/33u4euop8pg31jsq5hadc9dsrs%40group.calendar.google.com/public/basic.ics)  
-- [Intercontinental GT Challenge](https://calendar.google.com/calendar/ical/055gfu254476kkv92hpf4m3iv8%40group.calendar.google.com/public/basic.ics)  
-- [Intercontinental GT Open](https://calendar.google.com/calendar/ical/c0gviqo2rtl64937sscncipgt4%40group.calendar.google.com/public/basic.ics)  
-- [Ligier European Series](https://calendar.google.com/calendar/ical/7l8da1cna4mpk660q5v5r971c0%40group.calendar.google.com/public/basic.ics)  
-<!-- - [ADAC GT Master]() -->
+  - [WEC](https://calendar.google.com/calendar/ical/5j8vvpa2kfrq8eetgq5d4o03vk%40group.calendar.google.com/public/basic.ics)  <!-- - [24h of Le Mans (also included in WEC)]()   -->
+  - [Super GT](https://calendar.google.com/calendar/ical/pvu6u4d1d2kfc0ur4ia7gfo278%40group.calendar.google.com/public/basic.ics)  
+  - [European Le Mans Series](https://calendar.google.com/calendar/ical/ieqsec5qnrlmff5u7rsl6c0d3s%40group.calendar.google.com/public/basic.ics)  
+  - [Asian Le Mans Series](https://calendar.google.com/calendar/ical/tmsg86gj2j83ro0k4he49mkioc%40group.calendar.google.com/public/basic.ics)   
+  - [GT World Challenge Europe](https://calendar.google.com/calendar/ical/on1bf7bpmi0873u3j2n91edj90%40group.calendar.google.com/public/basic.ics)  
+  - [Ultimate Cup Series](https://calendar.google.com/calendar/ical/ikh2j99pv63p2jchlvbuoh7vqk%40group.calendar.google.com/public/basic.ics)  <!-- - [24h Series]()   -->
+  - [DTM](https://calendar.google.com/calendar/ical/gp6hg32kfqc7metlbolvmi30bk%40group.calendar.google.com/public/basic.ics)
+  - [FFSA GT](https://calendar.google.com/calendar/ical/sd8ul89d8kd2a35rsfh8tulnck%40group.calendar.google.com/public/basic.ics)  
+  - [GT4 European Series](https://calendar.google.com/calendar/ical/2etdssca8e864ukmn1kdfb3mm4%40group.calendar.google.com/public/basic.ics)  
+  - [Gulf 12 hours](https://calendar.google.com/calendar/ical/i0dh0n24piv1cmhcdr69trac94%40group.calendar.google.com/public/basic.ics)  
+  - [IMSA](https://calendar.google.com/calendar/ical/33u4euop8pg31jsq5hadc9dsrs%40group.calendar.google.com/public/basic.ics)  
+  - [Intercontinental GT Challenge](https://calendar.google.com/calendar/ical/055gfu254476kkv92hpf4m3iv8%40group.calendar.google.com/public/basic.ics)  
+  - [Intercontinental GT Open](https://calendar.google.com/calendar/ical/c0gviqo2rtl64937sscncipgt4%40group.calendar.google.com/public/basic.ics)  
+  - [Ligier European Series](https://calendar.google.com/calendar/ical/7l8da1cna4mpk660q5v5r971c0%40group.calendar.google.com/public/basic.ics)  
+  <!-- - [ADAC GT Master]() -->
