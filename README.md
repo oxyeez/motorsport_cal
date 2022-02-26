@@ -35,7 +35,7 @@ Note that if you set one to false, the already created events will not be delete
 
 ## Subscriptions
 
-For thoose who just want to subscribe to some calendars and add theme to your own calendar, you can download theese .ics subscription links:  
+For those who just want to subscribe to some calendars and add theme to your own calendar, you can download these .ics subscription links:  
 - [Formula 1](https://calendar.google.com/calendar/ical/nce9jjita3pc5fi4k3qht4cseg%40group.calendar.google.com/public/basic.ics)  
 - [Moto GP](https://calendar.google.com/calendar/ical/7a1spgbdlvl4p2t4gudi8ccmec%40group.calendar.google.com/public/basic.ics)  
 - [Moto 2](https://calendar.google.com/calendar/ical/g24ihrfq8apbgqnjf50mf3o1bo%40group.calendar.google.com/public/basic.ics)  
