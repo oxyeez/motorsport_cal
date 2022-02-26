@@ -25,5 +25,7 @@
       "ligiereu": { "name": "Ligier European Series", "track": false, "url_code": 42 },
       "adacgtmaster": { "name": "ADAC GT Master", "track": false, "url_code": 54 }
     }
-  }
+  },
+  "indycar": { "name": "IndyCar", "track": false },
+  "indylights": { "name": "IndyLights", "track": false }
 }

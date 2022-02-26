@@ -144,7 +144,7 @@ def update_f1_schedule(schedule):
         if (len(schedule['f1']) == 0 or not any(event['title'] == title for event in schedule['f1'])) and datetime.fromisoformat(end_date).date() > datetime.today().date():
             schedule['f1'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
     
-    return schedule
+    return add_f1_sub_events(schedule)
 
 
 def add_f1_sub_events(schedule):
@@ -187,13 +187,13 @@ def update_moto_schedule(serie, schedule):
             if event_soup.find('div', 'event-date__date') is not None:
                 dates = event_soup.find('div', 'event-date__date').text.strip()
                 year = re.search('([2][0]\d{2})', event_soup.find('div', 'c-schedule__date active').text).group(0)
-                start_date = datetime.strptime(f"{dates.split('-')[0].strip()} {year}", '%d %b %Y').isoformat()
-                end_date = datetime.strptime(f"{dates.split('-')[1].strip()} {year}", '%d %b %Y').isoformat()
+                start_date = datetime.strptime(f"{dates.split('-')[0].strip()} {year}", '%d %b %Y')
+                end_date = datetime.strptime(f"{dates.split('-')[1].strip()} {year}", '%d %b %Y')
 
-                if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and datetime.fromisoformat(end_date).date() > datetime.today().date():
-                    schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
+                if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+                    schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
     
-    return schedule
+    return add_moto_sub_events(serie, schedule)
 
 
 def add_moto_sub_events(serie, schedule):
@@ -246,7 +246,7 @@ def update_wrc_schedule(schedule):
             if (len(schedule['wrc']) == 0 or not any(event['title'] == title for event in schedule['wrc'])):
                 schedule['wrc'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
 
-    return schedule
+    return add_wrc_sub_events(schedule)
 
 
 def add_wrc_sub_events(schedule):
@@ -295,31 +295,33 @@ def update_endurance_schedule(serie, schedule):
     return schedule
 
 
-## Indicar functions
-def update_indicar_schedule(schedule):
-    if 'indicar' not in schedule:
-        schedule['indicar'] = []
+## IndyCar and IndyLights functions
+def update_indycar_schedule(schedule, lights=False):
+    serie = 'indycar' if not lights else 'indylights'
+    if serie not in schedule:
+        schedule[serie] = []
     
-    url = 'https://www.indycar.com/Schedule'
+    url = 'https://www.indycar.com/Schedule' if not lights else 'https://www.indycar.com/indylights/schedule'
     print(f"Loading from url : {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
     for event in soup.find('div', 'schedule-list').find_all('li', 'schedule-list__item'):
         url = f"https://www.indycar.com{event.find('a', 'panel-trigger schedule-list__title').get('href')}"
-        title = event.find('a', 'panel-trigger schedule-list__title').find('span').text.replace('\n', '').strip()
-        end_date = datetime.steptime(f"{event.find('div', 'schedule-list__date').text.strip()} {datetime.now().year}", '%d %b %Y')
-        start_date = (end_date - timedelta(days=2)).isoformat()
-        end_date = end_date.isoformat()
+        title = re.sub(' +', ' ', event.find('a', 'panel-trigger schedule-list__title').find('span').text.replace('\n', '').strip())
+        end_day = re.sub(' +', ' ', event.find('div', 'schedule-list__date').text.replace('\n', '').replace('\r', '').strip())
+        end_date = datetime.strptime(f"{end_day} {datetime.now().year}", '%b %d %Y')
+        start_date = (end_date - timedelta(days=2))
 
-        if (len(schedule['indicar']) == 0 or not any(event['title'] == title for event in schedule['indicar'])) and end_date.date() > datetime.today().date():
-            schedule['indicar'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+            schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
 
-    return schedule
+    return add_indycar_sub_events(schedule, lights)
 
 
-def add_indicar_sub_events(schedule):
-    for event in schedule['indicar']:
+def add_indycar_sub_events(schedule, lights=False):
+    serie = 'indycar' if not lights else 'indylights'
+    for event in schedule[serie]:
         if event['url'] is not None and event['url'] != '':
             url = event['url']
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -328,8 +330,17 @@ def add_indicar_sub_events(schedule):
                 if 'Weekend Schedule/Results' in div.text:
                     for sub_event in div.find('div', 'race-list').find_all('div', 'race-list__item'):
                         title = sub_event.find('div', 'race-list__race text').text.replace('\n', '').strip()
-                        start_time = f""
-                        end_time = f""
+                        day = sub_event.find('div', 'race-list__date text').text.replace('\n', '').replace('\r', '').split(',')[1].strip()
+                        date = f"{datetime.now().year} {day}"
+                        start_time = sub_event.find('div', 'race-list__time text').text.replace('ET', '').replace('\n', '').replace('\r', '').split('-')[0].strip()
+                        end_time = sub_event.find('div', 'race-list__time text').text.replace('ET', '').replace('\n', '').replace('\r', '').split('-')[1].strip()
+                        start_time = datetime.strptime(f"{date} {start_time} -0500", '%Y %b %d %I:%M %p %z').isoformat()
+                        end_time = datetime.strptime(f"{date} {end_time} -0500", '%Y %b %d %I:%M %p %z').isoformat()
+                        
+                        if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
+                            event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+    
+    return schedule
 
 
 
@@ -347,25 +358,24 @@ def main():
     start_scraping = time.time()
     if CHOICES['f1']['track']:
         schedule = update_f1_schedule(schedule)
-        schedule = add_f1_sub_events(schedule)
     if CHOICES['motogp']['track']:
         schedule = update_moto_schedule('motogp', schedule)
-        schedule = add_moto_sub_events('motogp', schedule)
     if CHOICES['moto2']['track']:
         schedule = update_moto_schedule('moto2', schedule)
-        schedule = add_moto_sub_events('moto2', schedule)
     if CHOICES['moto3']['track']:
         schedule = update_moto_schedule('moto3', schedule)
-        schedule = add_moto_sub_events('moto3', schedule)
     if CHOICES['wrc']['track']:
         schedule = update_wrc_schedule(schedule)
-        schedule = add_wrc_sub_events(schedule)
     for serie_name, serie in CHOICES['endurance']['series'].items():
         if serie['track'] or CHOICES['endurance']['track_all']:
             if serie_name == '24lemans' and (CHOICES['endurance']['series']['wec']['track'] or CHOICES['endurance']['track_all']):
                 pass
             else:
                 schedule = update_endurance_schedule(serie_name, schedule)
+    if CHOICES['indycar']['track']:
+        schedule = update_indycar_schedule(schedule)
+    if CHOICES['indylights']['track']:
+        schedule = update_indycar_schedule(schedule, lights=True)
     
     end_scraping = time.time()
     print(f"Scraping done in {end_scraping - start_scraping} seconds")

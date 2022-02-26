@@ -5,6 +5,7 @@ A python script that scrap the websites of the different motorsport series :
 - [MotoGP - Moto2 - Moto3](https://www.motogp.com/en/calendar)  
 - [WRC](https://www.wrc.com/en/championship/calendar/wrc/)  
 - [Endurance (not official)](https://www.endurance-info.com/calendrier)  
+- [IndyCar](https://www.indycar.com/Schedule) and [IndyLights](https://www.indycar.com/indylights/schedule)
 - `new series incomming...`  
 
 and add requested motorsport event to a google calendar.  
