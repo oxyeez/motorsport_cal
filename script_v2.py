@@ -309,9 +309,15 @@ def update_indycar_schedule(schedule, lights=False):
     for event in soup.find('div', 'schedule-list').find_all('li', 'schedule-list__item'):
         url = f"https://www.indycar.com{event.find('a', 'panel-trigger schedule-list__title').get('href')}"
         title = re.sub(' +', ' ', event.find('a', 'panel-trigger schedule-list__title').find('span').text.replace('\n', '').strip())
-        end_day = re.sub(' +', ' ', event.find('div', 'schedule-list__date').text.replace('\n', '').replace('\r', '').strip())
-        end_date = datetime.strptime(f"{end_day} {datetime.now().year}", '%b %d %Y')
-        start_date = (end_date - timedelta(days=2))
+        
+        event_soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+        if event_soup.find('div', 'page-heading__title') is not None:
+            dates = event_soup.find('div', 'page-heading__title').find('h2').text.replace('\n', '').replace('\r', '').strip()
+            start_date = datetime.strptime(f"{datetime.now().year} {dates.split('-')[0].strip()}", '%Y %B %d')
+            if len(dates.split('-')[1].strip()) < 3:
+                end_date = datetime.strptime(f"{datetime.now().year} {datetime.strftime(start_date, '%m')} {dates.split('-')[1].strip()}", '%Y %m %d')
+            else: 
+                end_date = datetime.strptime(f"{datetime.now().year} {dates.split('-')[1].strip()}", '%Y %B %d')
 
         if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
