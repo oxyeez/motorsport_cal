@@ -61,3 +61,5 @@ For those who just want to subscribe to some calendars and add theme to your own
   - [Intercontinental GT Open](https://calendar.google.com/calendar/ical/c0gviqo2rtl64937sscncipgt4%40group.calendar.google.com/public/basic.ics)  
   - [Ligier European Series](https://calendar.google.com/calendar/ical/7l8da1cna4mpk660q5v5r971c0%40group.calendar.google.com/public/basic.ics)  
   - [ADAC GT Master](https://calendar.google.com/calendar/ical/82bn8no55aoconvsi8ak7lkuic%40group.calendar.google.com/public/basic.ics)  
+- [IndyCar](https://calendar.google.com/calendar/ical/o9n21ogf83a80fq7s1k0hnkfho%40group.calendar.google.com/public/basic.ics)
+- [IndyLights](https://calendar.google.com/calendar/ical/rn9jr9hfch1fq0ebcsh3f0tir0%40group.calendar.google.com/public/basic.ics)
