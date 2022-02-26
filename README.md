@@ -16,6 +16,8 @@ The prerequisites and the first step of this quickstart [here](https://developer
 
 Copy the credential .json file in the project directory and rename it credential.json.  
 
+Run `pip3 install dateparser`  
+
 ## Before first run
 
 In the choices.json file, set to `true` the motorsport series for which one you want to add events to your calendar.  
