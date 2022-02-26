@@ -57,10 +57,10 @@ def get_cal_service():
 
 
 def clear_past_events(schedule):
-    for race_serie in schedule.values():
-        for event in reversed(race_serie):
+    for race_serie_events in schedule.values():
+        for event in reversed(race_serie_events):
             if datetime.fromisoformat(event['end_date']).date() < datetime.now().date():
-                race_serie.remove(event)
+                race_serie_events.remove(event)
     return schedule
 
 
@@ -358,6 +358,7 @@ def main():
 
     if os.path.exists('schedule_v2.json'):
         schedule = load_json('schedule_v2.json')
+        schedule = clear_past_events(schedule)
     else: 
         schedule = {}
 
