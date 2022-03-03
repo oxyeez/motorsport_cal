@@ -1,7 +1,7 @@
 # Motorsport Calendar
 
 A python script that scrap the websites of the different motorsport series :  
-- [Formula 1](https://www.formula1.com/en/racing/2022.html)  
+- [Formula 1](https://www.formula1.com/en/racing/2022.html) - [Formula 2](https://www.fiaformula2.com/Calendar) - [Formula 3](https://www.fiaformula3.com/Calendar)  
 - [MotoGP - Moto2 - Moto3](https://www.motogp.com/en/calendar)  
 - [WRC](https://www.wrc.com/en/championship/calendar/wrc/)  
 - [Endurance (not official)](https://www.endurance-info.com/calendrier)  
@@ -14,9 +14,14 @@ and add requested motorsport event to a google calendar.
 
 The prerequisites and the first step of this quickstart [here](https://developers.google.com/calendar/api/quickstart/python).  
 
-Copy the credential .json file in the project directory and rename it credential.json.  
+Also run in terminal : 
+```bash
+pip3 install dateparser
+pip3 install bs4
+pip3 install requests
+```  
 
-Run `pip3 install dateparser`  
+Copy the credential .json file in the project directory and rename it credential.json.  
 
 ## Before first run
 
@@ -40,6 +45,8 @@ Note that if you set one to false, the already created events will not be delete
 
 For those who just want to subscribe to some calendars and add theme to your own calendar, you can download these .ics subscription links:  
 - [Formula 1](https://calendar.google.com/calendar/ical/nce9jjita3pc5fi4k3qht4cseg%40group.calendar.google.com/public/basic.ics)  
+- [Formula 2](https://calendar.google.com/calendar/ical/mv5re1mfhfaqg3uoe5l1nhg7ok%40group.calendar.google.com/public/basic.ics)  
+- [Formula 3](https://calendar.google.com/calendar/ical/664e91rgkvsqbhbuspavcioees%40group.calendar.google.com/public/basic.ics)  
 - [Moto GP](https://calendar.google.com/calendar/ical/7a1spgbdlvl4p2t4gudi8ccmec%40group.calendar.google.com/public/basic.ics)  
 - [Moto 2](https://calendar.google.com/calendar/ical/g24ihrfq8apbgqnjf50mf3o1bo%40group.calendar.google.com/public/basic.ics)  
 - [Moto 3](https://calendar.google.com/calendar/ical/l7messjqqunqm35gn49u6co13c%40group.calendar.google.com/public/basic.ics)  

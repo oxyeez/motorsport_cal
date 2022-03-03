@@ -3,12 +3,8 @@ from __future__ import print_function
 import json
 import os.path
 import re
-import sched
-import sys
 import time
 from datetime import datetime, timedelta
-from pprint import pprint
-from random import choices
 
 import dateparser
 import requests
@@ -64,9 +60,23 @@ def clear_past_events(schedule):
     return schedule
 
 
+def set_all_to_remove(schedule):
+    for serie, events in schedule.items():
+        for event in events:
+            if event['added2cal']:
+                event['to_remove'] = True
+                for sub_event in event['sub_events']:
+                    sub_event['to_remove'] = True
+    return schedule
+
+
+def event_cal_title(serie, event):
+    return f"[{CHOICES[serie]['name'] if serie in CHOICES else CHOICES['endurance']['series'][serie]['name']}] {event['title']}"
+
+
 def create_global_event(serie, event):
     cal_event = {
-        'summary': f"[{CHOICES[serie]['name'] if serie in CHOICES else CHOICES['endurance']['series'][serie]['name']}] {event['title']}",
+        'summary': event_cal_title(serie, event),
         'start': {
             'date': datetime.fromisoformat(event['start_date']).date().isoformat(),
             },
@@ -77,9 +87,13 @@ def create_global_event(serie, event):
     return cal_event
 
 
+def sub_event_cal_title(serie, event, sub_event):
+    return f"{event_cal_title(serie, event)} - {sub_event['title']}"
+
+
 def create_sub_event(serie, event, sub_event):
     cal_event = {
-        'summary': f"[{CHOICES[serie]['name'] if serie in CHOICES else CHOICES['endurance']['series'][serie]['name']}] {event['title']} - {sub_event['title']}",
+        'summary': sub_event_cal_title(serie, event, sub_event),
         'start': {
             'dateTime': sub_event['start_time']
             },
@@ -94,34 +108,75 @@ def write_event2cal(event, service):
     service.events().insert(calendarId=CONFIG['calendar_id'], body=event).execute()
 
 
-def add_events2cal(schedule):
+def grab_cal_events(service):
+    events = {}
+    page_token = None
+    while True:
+        response = service.events().list(calendarId=CONFIG['calendar_id'], pageToken=page_token).execute()
+        for event in response['items']:
+            events[event['summary']] =  event['id']
+        page_token = response.get('nextPageToken')
+        if not page_token:
+            break
+    
+    return events
+
+
+def delete_cal_event(event_id, service):
+    service.events().delete(calendarId=CONFIG['calendar_id'], eventId=event_id).execute()
+
+
+def update_calendar(schedule):
     added_events = 0
+    removed_events = 0
     service = get_cal_service()
     while service == None:
-        time.sleep(5*60)
+        time.sleep(60)
         service = get_cal_service()
+    cal_events = grab_cal_events(service)
     
     start_writing2cal = time.time()
     for serie, events in schedule.items():
-        for event in events:
-            if not event['added2cal']:
-                cal_event = create_global_event(serie, event)
-                write_event2cal(cal_event, service)
-                event['added2cal'] = True
-                added_events += 1
-                time.sleep(0.6)
-            for sub_event in event['sub_events']:
+        for event in reversed(events):
+            for sub_event in reversed(event['sub_events']):
                 if not sub_event['added2cal']:
                     cal_event = create_sub_event(serie, event, sub_event)
                     write_event2cal(cal_event, service)
                     sub_event['added2cal'] = True
                     added_events += 1
                     time.sleep(0.6)
+                elif sub_event['to_remove']:
+                    cal_event_title = sub_event_cal_title(serie, event, sub_event)
+                    if cal_event_title in cal_events:
+                        delete_cal_event(cal_events[cal_event_title], service)
+                        event['sub_events'].remove(sub_event)
+                        removed_events += 1
+                        time.sleep(0.6)
+            if not event['added2cal']:
+                cal_event = create_global_event(serie, event)
+                write_event2cal(cal_event, service)
+                event['added2cal'] = True
+                added_events += 1
+                time.sleep(0.6)
+            elif event['to_remove']:
+                cal_event_title = event_cal_title(serie, event)
+                if cal_event_title in cal_events:
+                    delete_cal_event(cal_events[cal_event_title], service)
+                    events.remove(event)
+                    removed_events += 1
+                    time.sleep(0.6)
+            
     end_writing2cal = time.time()
+    if added_events > 0 or removed_events > 0:
+        print(f"Calendar update done in {end_writing2cal - start_writing2cal} seconds")
     if added_events > 0:
-        print(f'Added {added_events} events to calendar in {end_writing2cal - start_writing2cal} seconds')
+        print(f'Added {added_events} events to calendar')
     else:
-        print('No events added to calendar') 
+        print('No event added to calendar')
+    if removed_events > 0:
+        print(f'Removed {removed_events} events from calendar')
+    else:
+        print('No event removed from calendar')
 
     return schedule
 
@@ -132,7 +187,7 @@ def update_f1_schedule(schedule):
         schedule['f1'] = []
 
     url = f"https://www.formula1.com/en/racing/{datetime.now().year}.html"
-    print(f"Loading from url : {url} ...")
+    print(f"Getting {CHOICES['serie']['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -151,7 +206,12 @@ def update_f1_schedule(schedule):
     
         if (len(schedule['f1']) == 0 or not any(event['title'] == title for event in schedule['f1'])) and end_date.date() > datetime.today().date():
             schedule['f1'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
-    
+        else:
+            for event in schedule['f1']:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    break
+
     return add_f1_sub_events(schedule)
 
 
@@ -169,7 +229,12 @@ def add_f1_sub_events(schedule):
                 
                 if 'tbc' not in start_time.lower() and 'tbc' not in end_time.lower() and (len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events'])):
                     event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
-    
+                else:
+                    for sub_event in event['sub_events']:
+                        if event['title'] == title and event['added2cal']:
+                            event['to_remove'] = False
+                            break
+
     return schedule
 
 
@@ -179,7 +244,7 @@ def update_lower_formula_schedule(serie, schedule):
         schedule[serie] = []
 
     url = f"https://www.fiaformula{serie.replace('f','')}.com/Calendar"
-    print(f"Loading from url : {url} ...")
+    print(f"Getting {CHOICES['serie']['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -194,7 +259,12 @@ def update_lower_formula_schedule(serie, schedule):
         
         if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
-        
+        else:
+            for event in schedule[serie]:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    break
+
     return add_lower_formula_sub_events(serie, schedule)
 
 
@@ -214,6 +284,11 @@ def add_lower_formula_sub_events(serie, schedule):
 
                 if not sub_event['Unconfirmed'] and (len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events'])):
                     event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+                else:
+                    for sub_event in event['sub_events']:
+                        if event['title'] == title and event['added2cal']:
+                            event['to_remove'] = False
+                            break
 
     return schedule
 
@@ -224,7 +299,7 @@ def update_moto_schedule(serie, schedule):
         schedule[serie] = []
 
     url = 'https://www.motogp.com/en/calendar'
-    print(f"Loading from url : {url} ...")
+    print(f"Getting {CHOICES['serie']['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -245,7 +320,12 @@ def update_moto_schedule(serie, schedule):
 
                 if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
                     schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
-    
+                else:
+                    for event in schedule[serie]:
+                        if event['title'] == title and event['added2cal']:
+                            event['to_remove'] = False
+                            break
+
     return add_moto_sub_events(serie, schedule)
 
 
@@ -273,6 +353,12 @@ def add_moto_sub_events(serie, schedule):
                         title = sub_event.find('span', 'hidden-xs').text.replace('\n', '').strip()
                         if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
                             event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+                        else:
+                            for sub_event in event['sub_events']:
+                                if event['title'] == title and event['added2cal']:
+                                    event['to_remove'] = False
+                                    break
+    
     return schedule
 
 
@@ -282,7 +368,7 @@ def update_wrc_schedule(schedule):
         schedule['wrc'] = []
 
     url = 'https://api.wrc.com/contel-page/83388/calendar/season/160/competition/2'
-    print(f"Loading from url : {url} ...")
+    print(f"Getting WRC schedule from {url} ...")
 
     response = requests.request(method='GET', url=url)
     while response.status_code != 200:
@@ -298,6 +384,11 @@ def update_wrc_schedule(schedule):
             
             if (len(schedule['wrc']) == 0 or not any(event['title'] == title for event in schedule['wrc'])):
                 schedule['wrc'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
+            else:
+                for event in schedule['wrc']:
+                    if event['title'] == title and event['added2cal']:
+                        event['to_remove'] = False
+                        break
 
     return add_wrc_sub_events(schedule)
 
@@ -320,6 +411,11 @@ def add_wrc_sub_events(schedule):
 
                         if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
                             event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+                        else:
+                            for sub_event in event['sub_events']:
+                                if event['title'] == title and event['added2cal']:
+                                    event['to_remove'] = False
+                                    break
 
     return schedule
 
@@ -330,7 +426,7 @@ def update_endurance_schedule(serie, schedule):
         schedule[serie] = []
 
     url = f"https://www.endurance-info.com/calendrier?category=5&championship={str(CHOICES['endurance']['series'][serie]['url_code'])}&year={datetime.now().year}&month=all"
-    print(f"Loading from url : {url} ...")
+    print(f"Getting {CHOICES['endurance']['series'][serie]['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     cal = soup.find('div', 'block system-main-block contenudelapageprincipale')
@@ -344,7 +440,12 @@ def update_endurance_schedule(serie, schedule):
 
         if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
             schedule[serie].append({'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
-
+        else:
+            for event in schedule[serie]:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    break
+    
     return schedule
 
 
@@ -355,7 +456,7 @@ def update_indycar_schedule(schedule, lights=False):
         schedule[serie] = []
     
     url = 'https://www.indycar.com/Schedule' if not lights else 'https://www.indycar.com/indylights/schedule'
-    print(f"Loading from url : {url} ...")
+    print(f"Getting {CHOICES['indycar']['series'][serie]['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -374,7 +475,12 @@ def update_indycar_schedule(schedule, lights=False):
 
         if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
-
+        else:
+            for event in schedule[serie]:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    break
+    
     return add_indycar_sub_events(schedule, lights)
 
 
@@ -398,6 +504,11 @@ def add_indycar_sub_events(schedule, lights=False):
                         
                         if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
                             event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+                        else:
+                            for sub_event in event['sub_events']:
+                                if sub_event['title'] == title and sub_event['added2cal']:
+                                    sub_event['to_remove'] = False
+                                    break
     
     return schedule
 
@@ -411,6 +522,7 @@ def main():
     if os.path.exists('schedule_v2.json'):
         schedule = load_json('schedule_v2.json')
         schedule = clear_past_events(schedule)
+        schedule = set_all_to_remove(schedule)
     else: 
         schedule = {}
 
@@ -442,7 +554,7 @@ def main():
     end_scraping = time.time()
     print(f"Scraping done in {end_scraping - start_scraping} seconds")
 
-    schedule = add_events2cal(schedule)
+    schedule = update_calendar(schedule)
 
     write_schedule(schedule)
 
