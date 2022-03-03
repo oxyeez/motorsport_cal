@@ -95,26 +95,34 @@ def write_event2cal(event, service):
 
 
 def add_events2cal(schedule):
-    added_in_a_row = 0
+    added_events = 0
     service = get_cal_service()
     while service == None:
         time.sleep(5*60)
         service = get_cal_service()
     
+    start_writing2cal = time.time()
     for serie, events in schedule.items():
         for event in events:
             if not event['added2cal']:
                 cal_event = create_global_event(serie, event)
                 write_event2cal(cal_event, service)
                 event['added2cal'] = True
+                added_events += 1
                 time.sleep(0.6)
             for sub_event in event['sub_events']:
                 if not sub_event['added2cal']:
                     cal_event = create_sub_event(serie, event, sub_event)
                     write_event2cal(cal_event, service)
                     sub_event['added2cal'] = True
+                    added_events += 1
                     time.sleep(0.6)
-    
+    end_writing2cal = time.time()
+    if added_events > 0:
+        print(f'Added {added_events} events to calendar in {end_writing2cal - start_writing2cal} seconds')
+    else:
+        print('No events added to calendar') 
+
     return schedule
 
 
@@ -136,13 +144,13 @@ def update_f1_schedule(schedule):
         month = event.find('span', 'month-wrapper f1-wide--xxs').text
         start_date = f"{start_day} {month if '-' not in month else month.split('-')[0]} {datetime.now().year}"
         end_date = f"{end_day} {month if '-' not in month else month.split('-')[1]} {datetime.now().year}"
-        start_date = datetime.strptime(start_date, '%d %b %Y').isoformat()
-        end_date = datetime.strptime(end_date, '%d %b %Y').isoformat()
+        start_date = datetime.strptime(start_date, '%d %b %Y')
+        end_date = datetime.strptime(end_date, '%d %b %Y')
 
         title = event.find('div', 'event-title f1--xxs').text.replace('\n', '').replace('FORMULA 1', '').strip()
     
-        if (len(schedule['f1']) == 0 or not any(event['title'] == title for event in schedule['f1'])) and datetime.fromisoformat(end_date).date() > datetime.today().date():
-            schedule['f1'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
+        if (len(schedule['f1']) == 0 or not any(event['title'] == title for event in schedule['f1'])) and end_date.date() > datetime.today().date():
+            schedule['f1'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
     
     return add_f1_sub_events(schedule)
 
@@ -162,6 +170,51 @@ def add_f1_sub_events(schedule):
                 if 'tbc' not in start_time.lower() and 'tbc' not in end_time.lower() and (len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events'])):
                     event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
     
+    return schedule
+
+
+## Formula 2 and Formula 3 functions
+def update_lower_formula_schedule(serie, schedule):
+    if serie not in schedule:
+        schedule[serie] = []
+
+    url = f"https://www.fiaformula{serie.replace('f','')}.com/Calendar"
+    print(f"Loading from url : {url} ...")
+
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+    for event in soup.find_all('div', 'col-12 col-sm-6 col-lg-4 col-xl-3 result-card pre-race-wrapper'):
+        url = f"https://www.formula{serie.replace('f','')}.com{event.find('a').get('href')}"
+        title = f"{event.find('p', 'h6').text.strip()} : {event.find('span', 'ellipsis').text.strip()}"
+
+        start_date = datetime.strptime(f"{event.find('span', 'start-date').text.strip()} {event.find('span', 'month').text.strip()} {datetime.now().year}", '%d %B %Y')
+        end_date = datetime.strptime(f"{event.find('span', 'end-date').text.strip()} {event.find('span', 'month').text.strip()} {datetime.now().year}", '%d %B %Y')
+        if end_date < start_date:
+            start_date = start_date - timedelta(months=1)
+        
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+            schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
+        
+    return add_lower_formula_sub_events(serie, schedule)
+
+
+def add_lower_formula_sub_events(serie, schedule):
+    for event in schedule[serie]:
+        if event['url'] is not None and event['url'] != '':
+            url = f"https://api.formula1.com/v1/f2f3-fom-results/races/{event['url'][-4:]}?website={serie}"
+            
+            apikey = 'Ij4Lwi0yPPhuTstW1hhmmd9ntwTGhjNe' if serie == 'f2' else 'uwwf2TIPm5aMRFIAUfjwF5HQBMWAGSeE'
+            response = requests.request(method='GET', url=url, headers={'apikey': apikey})
+            event_json = json.loads(response.text)
+
+            for sub_event in event_json['SessionResults']:
+                title = sub_event['SessionName']
+                start_time = sub_event['SessionStartTime']
+                end_time = sub_event['SessionEndTime']
+
+                if not sub_event['Unconfirmed'] and (len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events'])):
+                    event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+
     return schedule
 
 
@@ -231,9 +284,9 @@ def update_wrc_schedule(schedule):
     url = 'https://api.wrc.com/contel-page/83388/calendar/season/160/competition/2'
     print(f"Loading from url : {url} ...")
 
-    response = requests.request(method="GET", url=url)
+    response = requests.request(method='GET', url=url)
     while response.status_code != 200:
-        response = requests.request(method="GET", url=url)
+        response = requests.request(method='GET', url=url)
     
     schedule_json = json.loads(response.text)
     for event in schedule_json['rallyEvents']['items']:
@@ -253,9 +306,9 @@ def add_wrc_sub_events(schedule):
     for event in schedule['wrc']:
         if event['url'] is not None and event['url'] != '':
             url = event['url']
-            response = requests.request(method="GET", url=url)
+            response = requests.request(method='GET', url=url)
             while response.status_code != 200:
-                response = requests.request(method="GET", url=url)
+                response = requests.request(method='GET', url=url)
             
             event_json = json.loads(response.text)
             for sub_event in event_json['eventDays']:
@@ -349,7 +402,6 @@ def add_indycar_sub_events(schedule, lights=False):
     return schedule
 
 
-
 ## Main
 def main():
     global CHOICES, CONFIG
@@ -383,16 +435,16 @@ def main():
         schedule = update_indycar_schedule(schedule)
     if CHOICES['indylights']['track']:
         schedule = update_indycar_schedule(schedule, lights=True)
-    
+    if CHOICES['f2']['track']:
+        schedule = update_lower_formula_schedule('f2', schedule)
+    if CHOICES['f3']['track']:
+        schedule = update_lower_formula_schedule('f3', schedule)
     end_scraping = time.time()
     print(f"Scraping done in {end_scraping - start_scraping} seconds")
 
-    start_writing2cal = time.time()
-    add_events2cal(schedule)
-    end_writing2cal = time.time()
-    print(f"Writing to calendar done in {end_writing2cal - start_writing2cal} seconds")
+    schedule = add_events2cal(schedule)
 
     write_schedule(schedule)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
