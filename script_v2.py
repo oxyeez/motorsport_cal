@@ -187,7 +187,7 @@ def update_f1_schedule(schedule):
         schedule['f1'] = []
 
     url = f"https://www.formula1.com/en/racing/{datetime.now().year}.html"
-    print(f"Getting {CHOICES['serie']['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES['f1']['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -244,7 +244,7 @@ def update_lower_formula_schedule(serie, schedule):
         schedule[serie] = []
 
     url = f"https://www.fiaformula{serie.replace('f','')}.com/Calendar"
-    print(f"Getting {CHOICES['serie']['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES[serie]['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -299,7 +299,7 @@ def update_moto_schedule(serie, schedule):
         schedule[serie] = []
 
     url = 'https://www.motogp.com/en/calendar'
-    print(f"Getting {CHOICES['serie']['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES[serie]['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -456,7 +456,7 @@ def update_indycar_schedule(schedule, lights=False):
         schedule[serie] = []
     
     url = 'https://www.indycar.com/Schedule' if not lights else 'https://www.indycar.com/indylights/schedule'
-    print(f"Getting {CHOICES['indycar']['series'][serie]['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES[serie]['name']} schedule from {url} ...")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
