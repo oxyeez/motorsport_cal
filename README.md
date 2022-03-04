@@ -38,7 +38,7 @@ It will open a navigator window to allow your Google Cloud Project to access you
 On each run, the script will check if there are new confirmed events on the website and will add to your calendar.  
 
 You can change the motorsport series in the config.json file at any moment.  
-Note that if you set one to false, the already created events will not be deleted from your calendar.  
+If setting one from true to false, upcomming events for this serie will be removed from your calendar.  
 
 
 ## Subscriptions

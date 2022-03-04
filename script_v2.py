@@ -55,14 +55,14 @@ def get_cal_service():
 def clear_past_events(schedule):
     for race_serie_events in schedule.values():
         for event in reversed(race_serie_events):
-            if datetime.fromisoformat(event['end_date']).date() < datetime.now().date():
+            if datetime.fromisoformat(event['end_date']).date() <= datetime.now().date():
                 race_serie_events.remove(event)
     return schedule
 
 
 def set_all_to_remove(schedule):
-    for serie, events in schedule.items():
-        for event in events:
+    for serie in schedule.values():
+        for event in serie:
             if event['added2cal']:
                 event['to_remove'] = True
                 for sub_event in event['sub_events']:
@@ -126,9 +126,14 @@ def delete_cal_event(event_id, service):
     service.events().delete(calendarId=CONFIG['calendar_id'], eventId=event_id).execute()
 
 
+def update_cal_event(event_id, event, service):
+    service.events().update(calendarId=CONFIG['calendar_id'], eventId=event_id, body=event).execute()
+
+
 def update_calendar(schedule):
     added_events = 0
     removed_events = 0
+    updated_events = 0
     service = get_cal_service()
     while service == None:
         time.sleep(60)
@@ -145,12 +150,20 @@ def update_calendar(schedule):
                     sub_event['added2cal'] = True
                     added_events += 1
                     time.sleep(0.6)
-                elif sub_event['to_remove']:
+                elif 'to_remove' in sub_event and sub_event['to_remove']:
                     cal_event_title = sub_event_cal_title(serie, event, sub_event)
                     if cal_event_title in cal_events:
                         delete_cal_event(cal_events[cal_event_title], service)
                         event['sub_events'].remove(sub_event)
                         removed_events += 1
+                        time.sleep(0.6)
+                elif 'to_update' in sub_event and sub_event['to_update']:
+                    cal_event_title = sub_event_cal_title(serie, event, sub_event)
+                    if cal_event_title in cal_events:
+                        cal_event = create_sub_event(serie, event, sub_event)
+                        update_cal_event(cal_events[cal_event_title], cal_event, service)
+                        sub_event['to_update'] = False
+                        updated_events += 1
                         time.sleep(0.6)
             if not event['added2cal']:
                 cal_event = create_global_event(serie, event)
@@ -158,25 +171,37 @@ def update_calendar(schedule):
                 event['added2cal'] = True
                 added_events += 1
                 time.sleep(0.6)
-            elif event['to_remove']:
+            elif 'to_remove' in event and event['to_remove']:
                 cal_event_title = event_cal_title(serie, event)
                 if cal_event_title in cal_events:
                     delete_cal_event(cal_events[cal_event_title], service)
                     events.remove(event)
                     removed_events += 1
                     time.sleep(0.6)
-            
+            elif 'to_update' in event and event['to_update']:
+                cal_event_title = event_cal_title(serie, event)
+                if cal_event_title in cal_events:
+                    cal_event = create_global_event(serie, event)
+                    update_cal_event(cal_events[cal_event_title], cal_event, service)
+                    event['to_update'] = False
+                    updated_events += 1
+                    time.sleep(0.6)
+
     end_writing2cal = time.time()
-    if added_events > 0 or removed_events > 0:
-        print(f"Calendar update done in {end_writing2cal - start_writing2cal} seconds")
     if added_events > 0:
         print(f'Added {added_events} events to calendar')
     else:
         print('No event added to calendar')
+    if updated_events > 0:
+        print(f'Updated {updated_events} events in calendar')
+    else:
+        print('No event updated in calendar')
     if removed_events > 0:
         print(f'Removed {removed_events} events from calendar')
     else:
         print('No event removed from calendar')
+    if added_events > 0 or removed_events > 0 or updated_events > 0:
+        print(f"Calendar update done in {end_writing2cal - start_writing2cal} seconds")
 
     return schedule
 
@@ -210,6 +235,10 @@ def update_f1_schedule(schedule):
             for event in schedule['f1']:
                 if event['title'] == title and event['added2cal']:
                     event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
                     break
 
     return add_f1_sub_events(schedule)
@@ -233,6 +262,10 @@ def add_f1_sub_events(schedule):
                     for sub_event in event['sub_events']:
                         if sub_event['title'] == title and sub_event['added2cal']:
                             sub_event['to_remove'] = False
+                            if sub_event['start_time'] != start_time or sub_event['end_time'] != end_time:
+                                sub_event['start_time'] = start_time
+                                sub_event['end_time'] = end_time
+                                sub_event['to_update'] = True
                             break
 
     return schedule
@@ -263,6 +296,10 @@ def update_lower_formula_schedule(serie, schedule):
             for event in schedule[serie]:
                 if event['title'] == title and event['added2cal']:
                     event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
                     break
 
     return add_lower_formula_sub_events(serie, schedule)
@@ -288,6 +325,10 @@ def add_lower_formula_sub_events(serie, schedule):
                     for sub_event in event['sub_events']:
                         if sub_event['title'] == title and sub_event['added2cal']:
                             sub_event['to_remove'] = False
+                            if sub_event['start_time'] != start_time or sub_event['end_time'] != end_time:
+                                sub_event['start_time'] = start_time
+                                sub_event['end_time'] = end_time
+                                sub_event['to_update'] = True
                             break
 
     return schedule
@@ -324,6 +365,10 @@ def update_moto_schedule(serie, schedule):
                     for event in schedule[serie]:
                         if event['title'] == title and event['added2cal']:
                             event['to_remove'] = False
+                            if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                                event['start_date'] = start_date.isoformat()
+                                event['end_date'] = end_date.isoformat()
+                                event['to_update'] = True
                             break
 
     return add_moto_sub_events(serie, schedule)
@@ -357,6 +402,10 @@ def add_moto_sub_events(serie, schedule):
                             for sub_event in event['sub_events']:
                                 if sub_event['title'] == title and sub_event['added2cal']:
                                     sub_event['to_remove'] = False
+                                    if sub_event['start_time'] != start_time or sub_event['end_time'] != end_time:
+                                        sub_event['start_time'] = start_time
+                                        sub_event['end_time'] = end_time
+                                        sub_event['to_update'] = True
                                     break
     
     return schedule
@@ -379,15 +428,19 @@ def update_wrc_schedule(schedule):
         if event['status']['name'] != 'Post Event':
             url = f"https://api.wrc.com/sdb/rallyevent/{event['id']}"
             title = event['name']
-            start_date = datetime.strptime(event['eventDays'][0]['eventDay'], '%Y-%m-%d').isoformat()
-            end_date = datetime.strptime(event['eventDays'][len(event['eventDays'])-1]['eventDay'], '%Y-%m-%d').isoformat()
+            start_date = datetime.strptime(event['eventDays'][0]['eventDay'], '%Y-%m-%d')
+            end_date = datetime.strptime(event['eventDays'][len(event['eventDays'])-1]['eventDay'], '%Y-%m-%d')
             
             if (len(schedule['wrc']) == 0 or not any(event['title'] == title for event in schedule['wrc'])):
-                schedule['wrc'].append({'url': url, 'added2cal': False, 'start_date': start_date, 'end_date': end_date, 'title': title, 'sub_events': []})
+                schedule['wrc'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
             else:
                 for event in schedule['wrc']:
                     if event['title'] == title and event['added2cal']:
                         event['to_remove'] = False
+                        if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                            event['start_date'] = start_date.isoformat()
+                            event['end_date'] = end_date.isoformat()
+                            event['to_update'] = True
                         break
 
     return add_wrc_sub_events(schedule)
@@ -415,6 +468,10 @@ def add_wrc_sub_events(schedule):
                             for sub_event in event['sub_events']:
                                 if sub_event['title'] == title and sub_event['added2cal']:
                                     sub_event['to_remove'] = False
+                                    if sub_event['start_time'] != start_time or sub_event['end_time'] != end_time:
+                                        sub_event['start_time'] = start_time
+                                        sub_event['end_time'] = end_time
+                                        sub_event['to_update'] = True
                                     break
 
     return schedule
@@ -444,6 +501,10 @@ def update_endurance_schedule(serie, schedule):
             for event in schedule[serie]:
                 if event['title'] == title and event['added2cal']:
                     event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
                     break
     
     return schedule
@@ -479,6 +540,10 @@ def update_indycar_schedule(schedule, lights=False):
             for event in schedule[serie]:
                 if event['title'] == title and event['added2cal']:
                     event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
                     break
     
     return add_indycar_sub_events(schedule, lights)
@@ -499,15 +564,19 @@ def add_indycar_sub_events(schedule, lights=False):
                         date = f"{datetime.now().year} {day}"
                         start_time = sub_event.find('div', 'race-list__time text').text.replace('ET', '').replace('\n', '').replace('\r', '').split('-')[0].strip()
                         end_time = sub_event.find('div', 'race-list__time text').text.replace('ET', '').replace('\n', '').replace('\r', '').split('-')[1].strip()
-                        start_time = datetime.strptime(f"{date} {start_time} -0500", '%Y %b %d %I:%M %p %z').isoformat()
-                        end_time = datetime.strptime(f"{date} {end_time} -0500", '%Y %b %d %I:%M %p %z').isoformat()
+                        start_time = datetime.strptime(f"{date} {start_time} -0500", '%Y %b %d %I:%M %p %z')
+                        end_time = datetime.strptime(f"{date} {end_time} -0500", '%Y %b %d %I:%M %p %z')
                         
                         if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
-                            event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
+                            event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time.isoformat(), 'end_time': end_time.isoformat()})
                         else:
                             for sub_event in event['sub_events']:
                                 if sub_event['title'] == title and sub_event['added2cal']:
                                     sub_event['to_remove'] = False
+                                    if sub_event['start_time'] != start_time.isoformat() or sub_event['end_time'] != end_time.isoformat():
+                                        sub_event['start_time'] = start_time.isoformat()
+                                        sub_event['end_time'] = end_time.isoformat()
+                                        sub_event['to_update'] = True
                                     break
     
     return schedule
@@ -527,30 +596,26 @@ def main():
         schedule = {}
 
     start_scraping = time.time()
-    if CHOICES['f1']['track']:
-        schedule = update_f1_schedule(schedule)
-    if CHOICES['motogp']['track']:
-        schedule = update_moto_schedule('motogp', schedule)
-    if CHOICES['moto2']['track']:
-        schedule = update_moto_schedule('moto2', schedule)
-    if CHOICES['moto3']['track']:
-        schedule = update_moto_schedule('moto3', schedule)
-    if CHOICES['wrc']['track']:
-        schedule = update_wrc_schedule(schedule)
-    for serie_name, serie in CHOICES['endurance']['series'].items():
-        if serie['track'] or CHOICES['endurance']['track_all']:
-            if serie_name == '24lemans' and (CHOICES['endurance']['series']['wec']['track'] or CHOICES['endurance']['track_all']):
-                pass
-            else:
-                schedule = update_endurance_schedule(serie_name, schedule)
-    if CHOICES['indycar']['track']:
-        schedule = update_indycar_schedule(schedule)
-    if CHOICES['indylights']['track']:
-        schedule = update_indycar_schedule(schedule, lights=True)
-    if CHOICES['f2']['track']:
-        schedule = update_lower_formula_schedule('f2', schedule)
-    if CHOICES['f3']['track']:
-        schedule = update_lower_formula_schedule('f3', schedule)
+
+    for serie_name, serie in CHOICES.items():
+        if serie_name == 'f1' and serie['track']:
+            schedule = update_f1_schedule(schedule)
+        elif (serie_name in ['f2', 'f3']) and serie['track']:
+            schedule = update_lower_formula_schedule(serie_name, schedule)
+        elif (serie_name in ['motogp', 'moto2', 'moto3']) and serie['track']:
+            schedule = update_moto_schedule(serie_name, schedule)
+        elif serie_name == 'wrc' and serie['track']:
+            schedule = update_wrc_schedule(schedule)
+        elif serie_name == 'endurance':
+            for sub_serie_name, sub_serie in serie['series'].items():
+                if sub_serie['track'] or serie['track_all']:
+                    if sub_serie_name == '24lemans' and (serie['series']['wec']['track'] or serie['track_all']):
+                        pass
+                    else:
+                        schedule = update_endurance_schedule(sub_serie_name, schedule)
+        elif (serie_name in ['indycar', 'indylights']) and serie['track']:
+            schedule = update_indycar_schedule(schedule, lights=(serie_name == 'indylights'))
+
     end_scraping = time.time()
     print(f"Scraping done in {end_scraping - start_scraping} seconds")
 
