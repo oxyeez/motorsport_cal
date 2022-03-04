@@ -231,8 +231,8 @@ def add_f1_sub_events(schedule):
                     event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
                 else:
                     for sub_event in event['sub_events']:
-                        if event['title'] == title and event['added2cal']:
-                            event['to_remove'] = False
+                        if sub_event['title'] == title and sub_event['added2cal']:
+                            sub_event['to_remove'] = False
                             break
 
     return schedule
@@ -286,8 +286,8 @@ def add_lower_formula_sub_events(serie, schedule):
                     event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
                 else:
                     for sub_event in event['sub_events']:
-                        if event['title'] == title and event['added2cal']:
-                            event['to_remove'] = False
+                        if sub_event['title'] == title and sub_event['added2cal']:
+                            sub_event['to_remove'] = False
                             break
 
     return schedule
@@ -355,8 +355,8 @@ def add_moto_sub_events(serie, schedule):
                             event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
                         else:
                             for sub_event in event['sub_events']:
-                                if event['title'] == title and event['added2cal']:
-                                    event['to_remove'] = False
+                                if sub_event['title'] == title and sub_event['added2cal']:
+                                    sub_event['to_remove'] = False
                                     break
     
     return schedule
@@ -413,8 +413,8 @@ def add_wrc_sub_events(schedule):
                             event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time, 'end_time': end_time})
                         else:
                             for sub_event in event['sub_events']:
-                                if event['title'] == title and event['added2cal']:
-                                    event['to_remove'] = False
+                                if sub_event['title'] == title and sub_event['added2cal']:
+                                    sub_event['to_remove'] = False
                                     break
 
     return schedule
