@@ -55,6 +55,9 @@ def get_cal_service():
 def clear_past_events(schedule):
     for race_serie_events in schedule.values():
         for event in reversed(race_serie_events):
+            for sub_event in reversed(event['sub_events']):
+                if datetime.fromisoformat(sub_event['end_time']) <= datetime.now():
+                    event.remove(sub_event)
             if datetime.fromisoformat(event['end_date']).date() <= datetime.now().date():
                 race_serie_events.remove(event)
     return schedule
