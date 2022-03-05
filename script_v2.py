@@ -382,14 +382,14 @@ def add_moto_sub_events(serie, schedule):
 
             reg = re.compile('c-schedule__table-row.*')
             for sub_event in soup.find_all('div', reg):
-                if serie in sub_event.text.lower() and 'Report' in sub_event.text and 'Timing' in sub_event.text:
+                if serie in sub_event.text.lower() and ('report' in sub_event.text.lower() or 'timing' in sub_event.text.lower() or 'result' in sub_event.text.lower()):
                     dates = sub_event.find('div', 'c-schedule__table-cell visible-lg c-schedule__time').find_all('span')
                     start_time = dates[0].get('data-ini-time')
                     start_time = f"{start_time[:-2]}:{start_time[-2:]}"
                     if len(dates) > 1:
                         end_time = sub_event.find('div', 'c-schedule__table-cell visible-lg c-schedule__time').find_all('span')[1].get('data-end')
                         end_time = f"{end_time[:-2]}:{end_time[-2:]}"
-                    elif 'Race' in sub_event.text:
+                    elif 'race' in sub_event.text.lower():
                         end_time = (datetime.fromisoformat(start_time) + timedelta(hours=1)).isoformat()
                     else: 
                         end_time = None
