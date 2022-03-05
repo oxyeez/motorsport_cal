@@ -55,10 +55,7 @@ def get_cal_service():
 def clear_past_events(schedule):
     for race_serie_events in schedule.values():
         for event in reversed(race_serie_events):
-            for sub_event in reversed(event['sub_events']):
-                if datetime.fromisoformat(sub_event['end_time']) <= datetime.now():
-                    event.remove(sub_event)
-            if datetime.fromisoformat(event['end_date']).date() <= datetime.now().date():
+            if datetime.fromisoformat(event['end_date']).date() < datetime.now().date():
                 race_serie_events.remove(event)
     return schedule
 
@@ -232,7 +229,7 @@ def update_f1_schedule(schedule):
 
         title = event.find('div', 'event-title f1--xxs').text.replace('\n', '').replace('FORMULA 1', '').strip()
     
-        if (len(schedule['f1']) == 0 or not any(event['title'] == title for event in schedule['f1'])) and end_date.date() > datetime.today().date():
+        if (len(schedule['f1']) == 0 or not any(event['title'] == title for event in schedule['f1'])) and end_date.date() >= datetime.today().date():
             schedule['f1'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
         else:
             for event in schedule['f1']:
@@ -293,7 +290,7 @@ def update_lower_formula_schedule(serie, schedule):
         if end_date < start_date:
             start_date = start_date - timedelta(months=1)
         
-        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
         else:
             for event in schedule[serie]:
@@ -362,7 +359,7 @@ def update_moto_schedule(serie, schedule):
                 start_date = datetime.strptime(f"{dates.split('-')[0].strip()} {year}", '%d %b %Y')
                 end_date = datetime.strptime(f"{dates.split('-')[1].strip()} {year}", '%d %b %Y')
 
-                if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+                if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
                     schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
                 else:
                     for event in schedule[serie]:
@@ -498,7 +495,7 @@ def update_endurance_schedule(serie, schedule):
         end_date = re.search('(\d{1,2}\s[a-zûé]{3,4})', dates.find('div', 'field field--name-field-ending-date field--type-datetime field__item').text.strip()).group(0)
         end_date = dateparser.parse(f"{end_date} {datetime.now().year}")
 
-        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
             schedule[serie].append({'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
         else:
             for event in schedule[serie]:
@@ -537,7 +534,7 @@ def update_indycar_schedule(schedule, lights=False):
             else: 
                 end_date = datetime.strptime(f"{datetime.now().year} {dates.split('-')[1].strip()}", '%Y %B %d')
 
-        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() > datetime.today().date():
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
         else:
             for event in schedule[serie]:
