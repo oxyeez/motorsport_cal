@@ -538,21 +538,24 @@ def add_wec_sub_events(schedule):
                 elif timezone is not None:
                     info = sub_event.find_all('td')
                     title = info[0].text.replace('\n', '').strip()
-                    if title.lower() != 'race (end)':
-                        date = info[1].text.replace('\n', '').strip()
+                    date = info[1].text.replace('\n', '').strip()
+                    if title.lower() != 'race (end)' and str(datetime.now().year) in date:
                         if title.lower() == 'race (start)':
                             time = info[2].text.replace('\n', '').strip()
-                            start_time = datetime.strptime(f"{date} {time} {timezone}", '%d/%m/%Y %H:%M %Z')
+                            start_time = datetime.strptime(f"{date} {time} +0100", '%d/%m/%Y %H:%M %z')
                             end_time = start_time + timedelta(days=1)
                         else:
                             times = info[2].text.replace('\n', '').strip().split('–')
                             if 'am' in times[0].lower() or 'pm' in times[0].lower():
-                                start_time = datetime.strptime(f"{date} {times[0].strip().replace('00:', '12:')} {timezone}", '%d/%m/%Y %I:%M %p %Z')
-                                end_time = datetime.strptime(f"{date} {times[1].strip().replace('00:', '12:')} {timezone}", '%d/%m/%Y %I:%M %p %Z')
+                                start_time = datetime.strptime(f"{date} {times[0].strip().replace('00:', '12:')} +0100", '%d/%m/%Y %I:%M %p %z')
+                                end_time = datetime.strptime(f"{date} {times[1].strip().replace('00:', '12:')} +0100", '%d/%m/%Y %I:%M %p %z')
                             else:
-                                start_time = datetime.strptime(f"{date} {times[0].strip()} {timezone}", '%d/%m/%Y %H:%M %Z')
-                                end_time = datetime.strptime(f"{date} {times[1].strip()} {timezone}", '%d/%m/%Y %H:%M %Z')
+                                start_time = datetime.strptime(f"{date} {times[0].strip()} +0100", '%d/%m/%Y %H:%M %z')
+                                end_time = datetime.strptime(f"{date} {times[1].strip()} +0100", '%d/%m/%Y %H:%M %z')
                         
+                        if end_time < start_time:
+                            end_time += timedelta(days=1)
+
                         if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
                             event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time.isoformat(), 'end_time': end_time.isoformat()})
                         else:
