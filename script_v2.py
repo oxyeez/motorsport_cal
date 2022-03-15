@@ -4,6 +4,7 @@ import json
 import os.path
 import re
 import time
+import warnings
 from datetime import datetime, timedelta
 
 import dateparser
@@ -14,6 +15,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from rich.progress import track
 
 
 ## Genral functions
@@ -131,31 +133,31 @@ def update_cal_event(event_id, event, service):
 
 
 def update_calendar(schedule):
-    added_events = 0
-    removed_events = 0
-    updated_events = 0
+    added_events = []
+    removed_events = []
+    updated_events = []
     service = get_cal_service()
     while service == None:
         time.sleep(60)
         service = get_cal_service()
     cal_events = grab_cal_events(service)
     
-    start_writing2cal = time.time()
-    for serie, events in schedule.items():
+    start_updating_cal = time.time()
+    for serie, events in track(schedule.items()):
         for event in reversed(events):
             for sub_event in reversed(event['sub_events']):
                 if not sub_event['added2cal']:
                     cal_event = create_sub_event(serie, event, sub_event)
                     write_event2cal(cal_event, service)
                     sub_event['added2cal'] = True
-                    added_events += 1
+                    added_events.append(cal_event['summary'])
                     time.sleep(0.6)
                 elif 'to_remove' in sub_event and sub_event['to_remove']:
                     cal_event_title = sub_event_cal_title(serie, event, sub_event)
                     if cal_event_title in cal_events:
                         delete_cal_event(cal_events[cal_event_title], service)
                         event['sub_events'].remove(sub_event)
-                        removed_events += 1
+                        removed_events.append(cal_event_title)
                         time.sleep(0.6)
                 elif 'to_update' in sub_event and sub_event['to_update']:
                     cal_event_title = sub_event_cal_title(serie, event, sub_event)
@@ -163,20 +165,20 @@ def update_calendar(schedule):
                         cal_event = create_sub_event(serie, event, sub_event)
                         update_cal_event(cal_events[cal_event_title], cal_event, service)
                         sub_event['to_update'] = False
-                        updated_events += 1
+                        updated_events.append(cal_event_title)
                         time.sleep(0.6)
             if not event['added2cal']:
                 cal_event = create_global_event(serie, event)
                 write_event2cal(cal_event, service)
                 event['added2cal'] = True
-                added_events += 1
+                added_events.append(cal_event['summary'])
                 time.sleep(0.6)
             elif 'to_remove' in event and event['to_remove']:
                 cal_event_title = event_cal_title(serie, event)
                 if cal_event_title in cal_events:
                     delete_cal_event(cal_events[cal_event_title], service)
                     events.remove(event)
-                    removed_events += 1
+                    removed_events.append(cal_event_title)
                     time.sleep(0.6)
             elif 'to_update' in event and event['to_update']:
                 cal_event_title = event_cal_title(serie, event)
@@ -184,24 +186,30 @@ def update_calendar(schedule):
                     cal_event = create_global_event(serie, event)
                     update_cal_event(cal_events[cal_event_title], cal_event, service)
                     event['to_update'] = False
-                    updated_events += 1
+                    updated_events.append(cal_event_title)
                     time.sleep(0.6)
 
-    end_writing2cal = time.time()
-    if added_events > 0:
-        print(f'Added {added_events} events to calendar')
+    end_updating_cal = time.time()
+    if len(added_events) > 0:
+        print(f"Added {len(added_events)} events to calendar :")
+        for event in added_events:
+            print(f"\t{event}")
     else:
         print('No event added to calendar')
-    if updated_events > 0:
-        print(f'Updated {updated_events} events in calendar')
+    if len(updated_events) > 0:
+        print(f"Updated {len(updated_events)} events in calendar :")
+        for event in updated_events:
+            print(f"\t{event}")
     else:
         print('No event updated in calendar')
-    if removed_events > 0:
-        print(f'Removed {removed_events} events from calendar')
+    if len(removed_events) > 0:
+        print(f"Removed {len(removed_events)} events from calendar :")
+        for event in removed_events:
+            print(f"\t{event}")
     else:
         print('No event removed from calendar')
-    if added_events > 0 or removed_events > 0 or updated_events > 0:
-        print(f"Calendar update done in {end_writing2cal - start_writing2cal} seconds")
+    if len(added_events) > 0 or len(removed_events) > 0 or len(updated_events) > 0:
+        print(f"Calendar update done in {end_updating_cal - start_updating_cal} seconds")
 
     return schedule
 
@@ -212,7 +220,7 @@ def update_f1_schedule(schedule):
         schedule['f1'] = []
 
     url = f"https://www.formula1.com/en/racing/{datetime.now().year}.html"
-    print(f"Getting {CHOICES['f1']['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES['f1']['name']} schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -245,7 +253,7 @@ def update_f1_schedule(schedule):
 
 
 def add_f1_sub_events(schedule):
-    for event in schedule['f1']:
+    for event in track(schedule['f1'], description='adding sub events'):
         if event['url'] is not None and event['url'] != '':
             url = event['url']
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -477,7 +485,88 @@ def add_wrc_sub_events(schedule):
     return schedule
 
 
-## Endurance functions
+## WEC functions
+def update_wec_schedule(schedule):
+    if 'wec' not in schedule:
+        schedule['wec'] = []
+
+    url = f"https://wec-magazin.com/calendar-{datetime.now().year}/"
+    print(f"Getting {CHOICES['wec']['name']} schedule")
+
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+    for event in soup.find_all('div', 'wp-block-themeisle-blocks-advanced-column'):
+        if event.find('p') is not None:
+            url = event.find('a').get('href')
+            title = event.find('h4').text.replace('\n', '').strip()
+            
+            dates = event.find('p').text.replace('\n', '').strip().split('–')
+            if len(dates) == 1:
+                start_date = datetime.strptime(dates[0].strip(), '%d/%m/%Y')
+                end_date = start_date + timedelta(days=2)
+            else:
+                start_date = datetime.strptime(dates[0].strip() + dates[1].split('/')[-1].strip(), '%d/%m/%Y')
+                end_date = datetime.strptime(dates[1].strip(), '%d/%m/%Y')        
+        
+            if (len(schedule['wec']) == 0 or not any(event['title'] == title for event in schedule['wec'])) and end_date.date() >= datetime.today().date():
+                schedule['wec'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
+            else:
+                for event in schedule['wec']:
+                    if event['title'] == title and event['added2cal']:
+                        event['to_remove'] = False
+                        if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                            event['start_date'] = start_date.isoformat()
+                            event['end_date'] = end_date.isoformat()
+                            event['to_update'] = True
+                        break
+
+    return add_wec_sub_events(schedule)
+
+
+def add_wec_sub_events(schedule):
+    for event in schedule['wec']:
+        if event['url'] is not None and event['url'] != '':
+            url = event['url']
+            soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+            reg = re.compile('wp-block-kadence-tab kt-tab-inner-content kt-inner-tab-2.*')
+            table = soup.find('div', reg).find('table')
+            timezone = None
+            for sub_event in table.find_all('tr'):
+                if sub_event.find('strong') is not None and timezone is None:
+                    timezone = sub_event.find_all('td')[2].text.split('(')[1].split(')')[0].strip()
+                elif timezone is not None:
+                    info = sub_event.find_all('td')
+                    title = info[0].text.replace('\n', '').strip()
+                    if title.lower() != 'race (end)':
+                        date = info[1].text.replace('\n', '').strip()
+                        if title.lower() == 'race (start)':
+                            time = info[2].text.replace('\n', '').strip()
+                            start_time = datetime.strptime(f"{date} {time} {timezone}", '%d/%m/%Y %H:%M %Z')
+                            end_time = start_time + timedelta(days=1)
+                        else:
+                            times = info[2].text.replace('\n', '').strip().split('–')
+                            if 'am' in times[0].lower() or 'pm' in times[0].lower():
+                                start_time = datetime.strptime(f"{date} {times[0].strip().replace('00:', '12:')} {timezone}", '%d/%m/%Y %I:%M %p %Z')
+                                end_time = datetime.strptime(f"{date} {times[1].strip().replace('00:', '12:')} {timezone}", '%d/%m/%Y %I:%M %p %Z')
+                            else:
+                                start_time = datetime.strptime(f"{date} {times[0].strip()} {timezone}", '%d/%m/%Y %H:%M %Z')
+                                end_time = datetime.strptime(f"{date} {times[1].strip()} {timezone}", '%d/%m/%Y %H:%M %Z')
+                        
+                        if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
+                            event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time.isoformat(), 'end_time': end_time.isoformat()})
+                        else:
+                            for sub_event in event['sub_events']:
+                                if sub_event['title'] == title and sub_event['added2cal']:
+                                    sub_event['to_remove'] = False
+                                    if sub_event['start_time'] != start_time or sub_event['end_time'] != end_time:
+                                        sub_event['start_time'] = start_time
+                                        sub_event['end_time'] = end_time
+                                        sub_event['to_update'] = True
+                                    break
+    return schedule
+
+## Other endurance series function
 def update_endurance_schedule(serie, schedule):
     if serie not in schedule:
         schedule[serie] = []
@@ -588,6 +677,8 @@ def main():
     CHOICES = load_json('choices.json')
     CONFIG = load_json('config.json')
 
+    warnings.filterwarnings("ignore")
+
     if os.path.exists('schedule_v2.json'):
         schedule = load_json('schedule_v2.json')
         schedule = clear_past_events(schedule)
@@ -606,13 +697,12 @@ def main():
             schedule = update_moto_schedule(serie_name, schedule)
         elif serie_name == 'wrc' and serie['track']:
             schedule = update_wrc_schedule(schedule)
+        elif serie_name == 'wec' and serie['track']:
+            schedule = update_wec_schedule(schedule)
         elif serie_name == 'endurance':
             for sub_serie_name, sub_serie in serie['series'].items():
                 if sub_serie['track'] or serie['track_all']:
-                    if sub_serie_name == '24lemans' and (serie['series']['wec']['track'] or serie['track_all']):
-                        pass
-                    else:
-                        schedule = update_endurance_schedule(sub_serie_name, schedule)
+                    schedule = update_endurance_schedule(sub_serie_name, schedule)
         elif (serie_name in ['indycar', 'indylights']) and serie['track']:
             schedule = update_indycar_schedule(schedule, lights=(serie_name == 'indylights'))
 

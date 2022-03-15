@@ -4,7 +4,8 @@ A python script that scrap the websites of the different motorsport series :
 - [Formula 1](https://www.formula1.com/en/racing/2022.html) - [Formula 2](https://www.fiaformula2.com/Calendar) - [Formula 3](https://www.fiaformula3.com/Calendar)  
 - [MotoGP - Moto2 - Moto3](https://www.motogp.com/en/calendar)  
 - [WRC](https://www.wrc.com/en/championship/calendar/wrc/)  
-- [Endurance (not official)](https://www.endurance-info.com/calendrier)  
+- [WEC (not official)](https://wec-magazin.com/calendar-2022/)  
+- [Other Endurance Series (not official)](https://www.endurance-info.com/calendrier)  
 - [IndyCar](https://www.indycar.com/Schedule) and [IndyLights](https://www.indycar.com/indylights/schedule)
 - `new series incomming...`  
 
@@ -51,10 +52,9 @@ For those who just want to subscribe to some calendars and add theme to your own
 - [Moto 2](https://calendar.google.com/calendar/ical/g24ihrfq8apbgqnjf50mf3o1bo%40group.calendar.google.com/public/basic.ics)  
 - [Moto 3](https://calendar.google.com/calendar/ical/l7messjqqunqm35gn49u6co13c%40group.calendar.google.com/public/basic.ics)  
 - [WRC](https://calendar.google.com/calendar/ical/lakpim3e6u2e2v9jlkcka3d27g%40group.calendar.google.com/public/basic.ics)  
-- [All Endurance Series](https://calendar.google.com/calendar/ical/33fk4udv5a61bgq7jei17mrh18%40group.calendar.google.com/public/basic.ics)  
-`or pick the endurance series you want :`
-  - [WEC](https://calendar.google.com/calendar/ical/5j8vvpa2kfrq8eetgq5d4o03vk%40group.calendar.google.com/public/basic.ics)  
-  - [24h of Le Mans (also included in WEC)](https://calendar.google.com/calendar/ical/hcaaenkgaq3r7chm2h7gu4k9c0%40group.calendar.google.com/public/basic.ics)   
+- [WEC](https://calendar.google.com/calendar/ical/5j8vvpa2kfrq8eetgq5d4o03vk%40group.calendar.google.com/public/basic.ics)  
+- [All other Endurance Series](https://calendar.google.com/calendar/ical/33fk4udv5a61bgq7jei17mrh18%40group.calendar.google.com/public/basic.ics)  
+`or pick the endurance series you want :`   
   - [Super GT](https://calendar.google.com/calendar/ical/pvu6u4d1d2kfc0ur4ia7gfo278%40group.calendar.google.com/public/basic.ics)  
   - [European Le Mans Series](https://calendar.google.com/calendar/ical/ieqsec5qnrlmff5u7rsl6c0d3s%40group.calendar.google.com/public/basic.ics)  
   - [Asian Le Mans Series](https://calendar.google.com/calendar/ical/tmsg86gj2j83ro0k4he49mkioc%40group.calendar.google.com/public/basic.ics)   

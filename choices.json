@@ -6,11 +6,10 @@
   "moto2": { "name": "Moto 2", "track": false },
   "moto3": { "name": "Moto 3", "track": false },
   "wrc": { "name": "WRC", "track": false },
+  "wec": { "name": "WEC", "track": true },
   "endurance": {
     "track_all": false,
     "series": {
-      "wec": { "name": "WEC", "track": false, "url_code": 137 },
-      "24lemans": { "name": "24h of Le Mans", "track": false, "url_code": 45 },
       "supergt": { "name": "Super GT", "track": false, "url_code": 89 },
       "eulemans": { "name": "European Le Mans Series", "track": false, "url_code": 10 },
       "asianlemans": { "name": "Asian Le Mans Series", "track": false, "url_code": 37 },
