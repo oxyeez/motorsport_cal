@@ -502,11 +502,11 @@ def update_wec_schedule(schedule):
             
             dates = event.find('p').text.replace('\n', '').strip().split('–')
             if len(dates) == 1:
-                start_date = datetime.strptime(dates[0].strip(), '%d/%m/%Y')
-                end_date = start_date + timedelta(days=2)
+                end_date = datetime.strptime(dates[0].strip(), '%d/%m/%Y')
+                start_date = end_date + timedelta(days=-2)
             else:
                 start_date = datetime.strptime(dates[0].strip() + dates[1].split('/')[-1].strip(), '%d/%m/%Y')
-                end_date = datetime.strptime(dates[1].strip(), '%d/%m/%Y')        
+                end_date = datetime.strptime(dates[1].strip(), '%d/%m/%Y')
         
             if (len(schedule['wec']) == 0 or not any(event['title'] == title for event in schedule['wec'])) and end_date.date() >= datetime.today().date():
                 schedule['wec'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
@@ -562,9 +562,9 @@ def add_wec_sub_events(schedule):
                             for sub_event in event['sub_events']:
                                 if sub_event['title'] == title and sub_event['added2cal']:
                                     sub_event['to_remove'] = False
-                                    if sub_event['start_time'] != start_time or sub_event['end_time'] != end_time:
-                                        sub_event['start_time'] = start_time
-                                        sub_event['end_time'] = end_time
+                                    if sub_event['start_time'] != start_time.isoformat() or sub_event['end_time'] != end_time.isoformat():
+                                        sub_event['start_time'] = start_time.isoformat()
+                                        sub_event['end_time'] = end_time.isoformat()
                                         sub_event['to_update'] = True
                                     break
     return schedule
