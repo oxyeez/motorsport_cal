@@ -6,7 +6,7 @@
   "moto2": { "name": "Moto 2", "track": false },
   "moto3": { "name": "Moto 3", "track": false },
   "wrc": { "name": "WRC", "track": false },
-  "wec": { "name": "WEC", "track": true },
+  "wec": { "name": "WEC", "track": false },
   "endurance": {
     "track_all": false,
     "series": {

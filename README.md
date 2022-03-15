@@ -20,6 +20,7 @@ Also run in terminal :
 pip3 install dateparser
 pip3 install beautifulsoup4==4.10.0
 pip3 install requests
+pip3 install rich
 ```  
 
 Copy the credential .json file in the project directory and rename it credential.json.  

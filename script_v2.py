@@ -133,9 +133,7 @@ def update_cal_event(event_id, event, service):
 
 
 def update_calendar(schedule):
-    added_events = []
-    removed_events = []
-    updated_events = []
+    added_events, removed_events, updated_events = [], [], []
     service = get_cal_service()
     while service == None:
         time.sleep(60)
@@ -505,8 +503,8 @@ def update_wec_schedule(schedule):
                 end_date = datetime.strptime(dates[0].strip(), '%d/%m/%Y')
                 start_date = end_date + timedelta(days=-2)
             else:
-                start_date = datetime.strptime(dates[0].strip() + dates[1].split('/')[-1].strip(), '%d/%m/%Y')
                 end_date = datetime.strptime(dates[1].strip(), '%d/%m/%Y')
+                start_date = end_date + timedelta(days=-4)
         
             if (len(schedule['wec']) == 0 or not any(event['title'] == title for event in schedule['wec'])) and end_date.date() >= datetime.today().date():
                 schedule['wec'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
