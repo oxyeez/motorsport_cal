@@ -17,7 +17,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from rich.progress import track
 
-
 ## Genral functions
 def load_json(name):
     with open(name) as f:
@@ -141,8 +140,9 @@ def update_calendar(schedule):
     cal_events = grab_cal_events(service)
     
     start_updating_cal = time.time()
-    for serie, events in track(schedule.items()):
-        for event in reversed(events):
+    print("\nUpdating calendar...")
+    for serie, events in schedule.items():
+        for event in track(reversed(events), description=CHOICES[serie]['name'] if serie in CHOICES else CHOICES['endurance']['series'][serie]['name'], total=len(events)):
             for sub_event in reversed(event['sub_events']):
                 if not sub_event['added2cal']:
                     cal_event = create_sub_event(serie, event, sub_event)
@@ -218,7 +218,7 @@ def update_f1_schedule(schedule):
         schedule['f1'] = []
 
     url = f"https://www.formula1.com/en/racing/{datetime.now().year}.html"
-    print(f"Getting {CHOICES['f1']['name']} schedule")
+    print(f"Getting Formula 1 schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -251,7 +251,7 @@ def update_f1_schedule(schedule):
 
 
 def add_f1_sub_events(schedule):
-    for event in track(schedule['f1'], description='adding sub events'):
+    for event in track(schedule['f1'], description='Searching for sub events'):
         if event['url'] is not None and event['url'] != '':
             url = event['url']
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -283,7 +283,7 @@ def update_lower_formula_schedule(serie, schedule):
         schedule[serie] = []
 
     url = f"https://www.fiaformula{serie.replace('f','')}.com/Calendar"
-    print(f"Getting {CHOICES[serie]['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES[serie]['name']} schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -312,7 +312,7 @@ def update_lower_formula_schedule(serie, schedule):
 
 
 def add_lower_formula_sub_events(serie, schedule):
-    for event in schedule[serie]:
+    for event in track(schedule[serie], description='Searching for sub events'):
         if event['url'] is not None and event['url'] != '':
             url = f"https://api.formula1.com/v1/f2f3-fom-results/races/{event['url'][-4:]}?website={serie}"
             
@@ -346,7 +346,7 @@ def update_moto_schedule(serie, schedule):
         schedule[serie] = []
 
     url = 'https://www.motogp.com/en/calendar'
-    print(f"Getting {CHOICES[serie]['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES[serie]['name']} schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -357,31 +357,29 @@ def update_moto_schedule(serie, schedule):
         if '-' in title:
             title = title.split('-')[1].strip()
 
-        if url != '#schedule':
-            event_soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-            if event_soup.find('div', 'event-date__date') is not None:
-                dates = event_soup.find('div', 'event-date__date').text.strip()
-                year = re.search('([2][0]\d{2})', event_soup.find('div', 'c-schedule__date active').text).group(0)
-                start_date = datetime.strptime(f"{dates.split('-')[0].strip()} {year}", '%d %b %Y')
-                end_date = datetime.strptime(f"{dates.split('-')[1].strip()} {year}", '%d %b %Y')
+        date = event.find('div', 'event_date').text.replace('\n', '').strip()
+        end_date = datetime.strptime(f"{date} {datetime.now().year}", '%d %b %Y')
+        if 'test' in title.lower() and end_date > datetime(datetime.now().year, 7, 1):
+            end_date = datetime.strptime(f"{date} {datetime.now().year - 1}", '%d %b %Y')
+        start_date = end_date - timedelta(days=2)
 
-                if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
-                    schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
-                else:
-                    for event in schedule[serie]:
-                        if event['title'] == title and event['added2cal']:
-                            event['to_remove'] = False
-                            if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
-                                event['start_date'] = start_date.isoformat()
-                                event['end_date'] = end_date.isoformat()
-                                event['to_update'] = True
-                            break
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])):# and end_date.date() >= datetime.today().date():
+            schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
+        else:
+            for event in schedule[serie]:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
+                    break
 
     return add_moto_sub_events(serie, schedule)
 
 
 def add_moto_sub_events(serie, schedule):
-    for event in schedule[serie]:
+    for event in track(schedule[serie], description='Searching for sub events'):
         if event['url'] is not None and event['url'] != '' and event['url'] != '#schedule':
             url = event['url']
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -423,11 +421,9 @@ def update_wrc_schedule(schedule):
         schedule['wrc'] = []
 
     url = 'https://api.wrc.com/contel-page/83388/calendar/season/160/competition/2'
-    print(f"Getting WRC schedule from {url} ...")
+    print(f"Getting WRC schedule")
 
     response = requests.request(method='GET', url=url)
-    while response.status_code != 200:
-        response = requests.request(method='GET', url=url)
     
     schedule_json = json.loads(response.text)
     for event in schedule_json['rallyEvents']['items']:
@@ -453,7 +449,7 @@ def update_wrc_schedule(schedule):
 
 
 def add_wrc_sub_events(schedule):
-    for event in schedule['wrc']:
+    for event in track(schedule['wrc'], description='Searching for sub events'):
         if event['url'] is not None and event['url'] != '':
             url = event['url']
             response = requests.request(method='GET', url=url)
@@ -489,7 +485,7 @@ def update_wec_schedule(schedule):
         schedule['wec'] = []
 
     url = f"https://wec-magazin.com/calendar-{datetime.now().year}/"
-    print(f"Getting {CHOICES['wec']['name']} schedule")
+    print(f"Getting WEC schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -522,7 +518,7 @@ def update_wec_schedule(schedule):
 
 
 def add_wec_sub_events(schedule):
-    for event in schedule['wec']:
+    for event in track(schedule['wec'], description='Searching for sub events'):
         if event['url'] is not None and event['url'] != '':
             url = event['url']
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -567,13 +563,73 @@ def add_wec_sub_events(schedule):
                                     break
     return schedule
 
+
+## European Le Mans Series functions
+def update_eulemans_schedule(schedule):
+    if 'eulemans' not in schedule:
+        schedule['eulemans'] = []
+
+    url = f"https://api.europeanlemansseries.com/v1/ecm/races?year={datetime.now().year}"
+    print(f"Getting European Le Mans Series schedule")
+    response = requests.get(url)
+
+    events = json.loads(response.text)
+
+    for event in events:
+        url = f"https://api.europeanlemansseries.com/v1/ecm/race/{event['id']}/sessions?id={event['id']}"
+        title = event['english_name']
+        start_date = datetime.strptime(event['start_date'], '%a, %d %b %Y %H:%M:%S %z')
+        end_date = datetime.strptime(event['end_date'], '%a, %d %b %Y %H:%M:%S %z')
+        
+        if (len(schedule['eulemans']) == 0 or not any(event['title'] == title for event in schedule['eulemans'])) and end_date.date() >= datetime.today().date():
+            schedule['eulemans'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
+        else:
+            for event in schedule['eulemans']:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
+                    break
+
+    return add_eulemans_sub_events(schedule)
+
+
+def add_eulemans_sub_events(schedule):
+    for event in track(schedule['eulemans'], description='Searching for sub events'):
+        if event['url'] is not None and event['url'] != '':
+            url = event['url']
+            response = requests.get(url)
+            sub_events = json.loads(response.text)
+
+            for sub_event in sub_events:
+                title = sub_event['name_en']
+                start_time = datetime.strptime(sub_event['start'], '%a, %d %b %Y %H:%M:%S %z')
+                end_time = datetime.strptime(sub_event['end'], '%a, %d %b %Y %H:%M:%S %z')
+
+                if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
+                    event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time.isoformat(), 'end_time': end_time.isoformat()})
+                else:
+                    for sub_event in event['sub_events']:
+                        if sub_event['title'] == title and sub_event['added2cal']:
+                            sub_event['to_remove'] = False
+                            if sub_event['start_time'] != start_time.isoformat() or sub_event['end_time'] != end_time.isoformat():
+                                sub_event['start_time'] = start_time.isoformat()
+                                sub_event['end_time'] = end_time.isoformat()
+                                sub_event['to_update'] = True
+                            break
+    
+    return schedule
+
+
 ## Other endurance series function
 def update_endurance_schedule(serie, schedule):
     if serie not in schedule:
         schedule[serie] = []
 
     url = f"https://www.endurance-info.com/calendrier?category=5&championship={str(CHOICES['endurance']['series'][serie]['url_code'])}&year={datetime.now().year}&month=all"
-    print(f"Getting {CHOICES['endurance']['series'][serie]['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES['endurance']['series'][serie]['name']} schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     cal = soup.find('div', 'block system-main-block contenudelapageprincipale')
@@ -607,7 +663,7 @@ def update_indycar_schedule(schedule, lights=False):
         schedule[serie] = []
     
     url = 'https://www.indycar.com/Schedule' if not lights else 'https://www.indycar.com/indylights/schedule'
-    print(f"Getting {CHOICES[serie]['name']} schedule from {url} ...")
+    print(f"Getting {CHOICES[serie]['name']} schedule")
 
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
 
@@ -641,7 +697,7 @@ def update_indycar_schedule(schedule, lights=False):
 
 def add_indycar_sub_events(schedule, lights=False):
     serie = 'indycar' if not lights else 'indylights'
-    for event in schedule[serie]:
+    for event in track(schedule[serie], description='Searching for sub events'):
         if event['url'] is not None and event['url'] != '':
             url = event['url']
             soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -700,6 +756,8 @@ def main():
             schedule = update_wrc_schedule(schedule)
         elif serie_name == 'wec' and serie['track']:
             schedule = update_wec_schedule(schedule)
+        elif serie_name == 'eulemans' and serie['track']:
+            schedule = update_eulemans_schedule(schedule)
         elif serie_name == 'endurance':
             for sub_serie_name, sub_serie in serie['series'].items():
                 if sub_serie['track'] or serie['track_all']:
