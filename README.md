@@ -5,6 +5,7 @@ A python script that scrap the websites of the different motorsport series :
 - [MotoGP - Moto2 - Moto3](https://www.motogp.com/en/calendar)  
 - [WRC](https://www.wrc.com/en/championship/calendar/wrc/)  
 - [WEC (not official)](https://wec-magazin.com/calendar-2022/)  
+- [European Le Mans Series](https://www.europeanlemansseries.com/en/season)  
 - [Other Endurance Series (not official)](https://www.endurance-info.com/calendrier)  
 - [IndyCar](https://www.indycar.com/Schedule) and [IndyLights](https://www.indycar.com/indylights/schedule)
 - `new series incomming...`  
@@ -54,10 +55,10 @@ For those who just want to subscribe to some calendars and add theme to your own
 - [Moto 3](https://calendar.google.com/calendar/ical/l7messjqqunqm35gn49u6co13c%40group.calendar.google.com/public/basic.ics)  
 - [WRC](https://calendar.google.com/calendar/ical/lakpim3e6u2e2v9jlkcka3d27g%40group.calendar.google.com/public/basic.ics)  
 - [WEC](https://calendar.google.com/calendar/ical/5j8vvpa2kfrq8eetgq5d4o03vk%40group.calendar.google.com/public/basic.ics)  
+- [European Le Mans Series](https://calendar.google.com/calendar/ical/ieqsec5qnrlmff5u7rsl6c0d3s%40group.calendar.google.com/public/basic.ics)  
 - [All other Endurance Series](https://calendar.google.com/calendar/ical/33fk4udv5a61bgq7jei17mrh18%40group.calendar.google.com/public/basic.ics)  
 `or pick the endurance series you want :`   
   - [Super GT](https://calendar.google.com/calendar/ical/pvu6u4d1d2kfc0ur4ia7gfo278%40group.calendar.google.com/public/basic.ics)  
-  - [European Le Mans Series](https://calendar.google.com/calendar/ical/ieqsec5qnrlmff5u7rsl6c0d3s%40group.calendar.google.com/public/basic.ics)  
   - [Asian Le Mans Series](https://calendar.google.com/calendar/ical/tmsg86gj2j83ro0k4he49mkioc%40group.calendar.google.com/public/basic.ics)   
   - [GT World Challenge Europe](https://calendar.google.com/calendar/ical/on1bf7bpmi0873u3j2n91edj90%40group.calendar.google.com/public/basic.ics)  
   - [Ultimate Cup Series](https://calendar.google.com/calendar/ical/ikh2j99pv63p2jchlvbuoh7vqk%40group.calendar.google.com/public/basic.ics)  
