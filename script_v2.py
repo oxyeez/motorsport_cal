@@ -363,7 +363,7 @@ def update_moto_schedule(serie, schedule):
             end_date = datetime.strptime(f"{date} {datetime.now().year - 1}", '%d %b %Y')
         start_date = end_date - timedelta(days=2)
 
-        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])):# and end_date.date() >= datetime.today().date():
+        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
         else:
             for event in schedule[serie]:
