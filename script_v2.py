@@ -3,9 +3,14 @@ from __future__ import print_function
 import json
 import os.path
 import re
+import smtplib
 import time
 import warnings
 from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr
+import traceback
 
 import dateparser
 import requests
@@ -17,6 +22,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from rich.progress import track
 
+
 ## Genral functions
 def load_json(name):
     with open(name) as f:
@@ -26,6 +32,21 @@ def load_json(name):
 def write_schedule(schedule):
     with open('schedule_v2.json', 'w') as f:
         json.dump(schedule, f)
+
+
+def send_email(mail_body):
+    msg = MIMEMultipart()
+    msg['From'] = formataddr(('Motorsport Calendar Scrapper', CONFIG["addr_from"]))
+    msg['To'] = formataddr((CONFIG["your_name"], CONFIG["addr_to"]))
+    msg['Subject'] = 'Scrapping Issue'
+    msg.attach(MIMEText(mail_body))
+    mailserver = smtplib.SMTP('smtp.gmail.com', 587)
+    mailserver.ehlo()
+    mailserver.starttls()
+    mailserver.ehlo()
+    mailserver.login(CONFIG["addr_from"], CONFIG["password_from"])
+    mailserver.sendmail(CONFIG["addr_from"], CONFIG["addr_to"], msg.as_string())
+    mailserver.quit()
 
 
 def get_cal_service():
@@ -224,7 +245,6 @@ def update_f1_schedule(schedule):
 
     for event in soup.find_all('a', 'event-item-wrapper event-item-link'):
         url = f"https://www.formula1.com/{event.get('href')}"
-        print(url)
         start_day = event.find('span', 'start-date').text
         end_day = event.find('span', 'end-date').text
         month = event.find('span', re.compile('month-wrapper f1-wide--xxs.*')).text
@@ -730,10 +750,6 @@ def add_indycar_sub_events(schedule, lights=False):
 
 ## Main
 def main():
-    global CHOICES, CONFIG
-    CHOICES = load_json('choices.json')
-    CONFIG = load_json('config.json')
-
     warnings.filterwarnings("ignore")
 
     if os.path.exists('schedule_v2.json'):
@@ -773,4 +789,13 @@ def main():
     write_schedule(schedule)
 
 if __name__ == '__main__':
-    main()
+    global CHOICES, CONFIG
+    CHOICES = load_json('choices.json')
+    CONFIG = load_json('config.json')
+
+    try:
+        main()
+    except Exception as e:
+        if CONFIG['activate_notifications']:
+            send_email(f"Issue with scapping script:\n\t{e}\n\n{traceback.format_exc()}")
+        raise e

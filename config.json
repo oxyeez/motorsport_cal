@@ -4,5 +4,10 @@
     "SCOPES": [
         "https://www.googleapis.com/auth/calendar"
     ],
-    "calendar_id": "primary"
+    "calendar_id": "primary",
+    "activate_notifications": false ,
+    "addr_from": "",
+    "password_from":"",
+    "addr_to": "",
+    "your_name": ""
 }
