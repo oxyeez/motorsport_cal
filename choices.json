@@ -1,5 +1,5 @@
 {
-  "f1": { "name": "Formula 1", "track": false },
+  "f1": { "name": "Formula 1", "track": true },
   "f2": { "name": "Formula 2", "track": false },
   "f3": { "name": "Formula 3", "track": false },
   "motogp": { "name": "Moto GP", "track": false },

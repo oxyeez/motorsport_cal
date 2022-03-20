@@ -224,10 +224,10 @@ def update_f1_schedule(schedule):
 
     for event in soup.find_all('a', 'event-item-wrapper event-item-link'):
         url = f"https://www.formula1.com/{event.get('href')}"
-
+        print(url)
         start_day = event.find('span', 'start-date').text
         end_day = event.find('span', 'end-date').text
-        month = event.find('span', 'month-wrapper f1-wide--xxs').text
+        month = event.find('span', re.compile('month-wrapper f1-wide--xxs.*')).text
         start_date = f"{start_day} {month if '-' not in month else month.split('-')[0]} {datetime.now().year}"
         end_date = f"{end_day} {month if '-' not in month else month.split('-')[1]} {datetime.now().year}"
         start_date = datetime.strptime(start_date, '%d %b %Y')
@@ -363,7 +363,7 @@ def update_moto_schedule(serie, schedule):
             end_date = datetime.strptime(f"{date} {datetime.now().year - 1}", '%d %b %Y')
         start_date = end_date - timedelta(days=2)
 
-        if (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
+        if ('test' not in title.lower() or serie in title.lower()) and (len(schedule[serie]) == 0 or not any(event['title'] == title for event in schedule[serie])) and end_date.date() >= datetime.today().date():
             schedule[serie].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
         else:
             for event in schedule[serie]:
