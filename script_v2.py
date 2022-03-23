@@ -555,6 +555,7 @@ def add_wec_sub_events(schedule):
                     date = info[1].text.replace('\n', '').strip()
                     if title.lower() != 'race (end)' and str(datetime.now().year) in date:
                         if title.lower() == 'race (start)':
+                            title = 'Race'
                             time = info[2].text.replace('\n', '').strip()
                             start_time = datetime.strptime(f"{date} {time} +0100", '%d %B %Y %H:%M %z')
                             end_time = start_time + timedelta(days=1)
