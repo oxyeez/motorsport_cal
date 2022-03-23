@@ -556,7 +556,7 @@ def add_wec_sub_events(schedule):
                     if title.lower() != 'race (end)' and str(datetime.now().year) in date:
                         if title.lower() == 'race (start)':
                             time = info[2].text.replace('\n', '').strip()
-                            start_time = datetime.strptime(f"{date} {time} +0100", '%d/%m/%Y %H:%M %z')
+                            start_time = datetime.strptime(f"{date} {time} +0100", '%d %B %Y %H:%M %z')
                             end_time = start_time + timedelta(days=1)
                         else:
                             times = info[2].text.replace('\n', '').strip().split('–')
@@ -564,8 +564,8 @@ def add_wec_sub_events(schedule):
                                 start_time = datetime.strptime(f"{date} {times[0].strip().replace('00:', '12:')} +0100", '%d/%m/%Y %I:%M %p %z')
                                 end_time = datetime.strptime(f"{date} {times[1].strip().replace('00:', '12:')} +0100", '%d/%m/%Y %I:%M %p %z')
                             else:
-                                start_time = datetime.strptime(f"{date} {times[0].strip()} +0100", '%d/%m/%Y %H:%M %z')
-                                end_time = datetime.strptime(f"{date} {times[1].strip()} +0100", '%d/%m/%Y %H:%M %z')
+                                start_time = datetime.strptime(f"{date} {times[0].strip()} +0100", '%d %B %Y %H:%M %z')
+                                end_time = datetime.strptime(f"{date} {times[1].strip()} +0100", '%d %B %Y %H:%M %z')
                         
                         if end_time < start_time:
                             end_time += timedelta(days=1)
