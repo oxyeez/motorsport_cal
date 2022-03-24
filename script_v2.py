@@ -104,6 +104,9 @@ def create_global_event(serie, event):
             },
         'end': {
             'date': (datetime.fromisoformat(event['end_date']).date() + timedelta(days=1)).isoformat(),
+            },
+        'reminders': {
+            'useDefault': True,
             }
         }
     return cal_event
@@ -121,6 +124,9 @@ def create_sub_event(serie, event, sub_event):
             },
         'end': {
             'dateTime': sub_event['end_time']
+            },
+        'reminders': {
+            'useDefault': True,
             }
         }
     return cal_event
