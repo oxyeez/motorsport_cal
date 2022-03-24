@@ -47,7 +47,7 @@ If setting one from true to false, upcomming events for this serie will be remov
 ## Subscriptions
 
 For those who just want to subscribe to some calendars and add theme to your own calendar, you can download these .ics subscription links:  
-- [Formula 1](webcal://calendar.google.com/calendar/ical/nce9jjita3pc5fi4k3qht4cseg%40group.calendar.google.com/public/basic.ics)  
+- [Formula 1](https://cutt.ly/7SBMdT0)  
 - [Formula 2](webcal://calendar.google.com/calendar/ical/mv5re1mfhfaqg3uoe5l1nhg7ok%40group.calendar.google.com/public/basic.ics)  
 - [Formula 3](webcal://calendar.google.com/calendar/ical/664e91rgkvsqbhbuspavcioees%40group.calendar.google.com/public/basic.ics)  
 - [Moto GP](webcal://calendar.google.com/calendar/ical/7a1spgbdlvl4p2t4gudi8ccmec%40group.calendar.google.com/public/basic.ics)  
