@@ -1,5 +1,5 @@
 {
-  "f1": { "name": "Formula 1", "track": true },
+  "f1": { "name": "Formula 1", "track": false },
   "f2": { "name": "Formula 2", "track": false },
   "f3": { "name": "Formula 3", "track": false },
   "motogp": { "name": "Moto GP", "track": false },
@@ -8,6 +8,7 @@
   "wrc": { "name": "WRC", "track": false },
   "wec": { "name": "WEC", "track": false },
   "eulemans": { "name": "European Le Mans Series", "track": false },
+  "24series": { "name": "24h Series", "track": false },
   "endurance": {
     "track_all": false,
     "series": {
@@ -15,7 +16,6 @@
       "asianlemans": { "name": "Asian Le Mans Series", "track": false, "url_code": 37 },
       "gtworldeu": { "name": "GT World Challenge Europe", "track": false, "url_code": 39 },
       "ucs": { "name": "Ultimate Cup Series", "track": false, "url_code": 140 },
-      "24series": { "name": "24h Series", "track": false, "url_code": 61 },
       "dtm": { "name": "DTM", "track": false, "url_code": 55 },
       "ffsagt": { "name": "FFSA GT", "track": false, "url_code": 117 },
       "gt4eu": { "name": "GT4 European Series", "track": false, "url_code": 86 },

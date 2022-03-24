@@ -650,6 +650,71 @@ def add_eulemans_sub_events(schedule):
     return schedule
 
 
+## 24h Series functions
+def update_24series_schedule(schedule):
+    if '24series' not in schedule:
+        schedule['24series'] = []
+
+    url = 'https://www.24hseries.com/races'
+    print(f"Getting 24h Series schedule")
+
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    
+    for event in [x for x in soup.find('div', 'contentContainer').find_all('a', 'race') if x.get('data-upcoming') == '1']:
+        url = f"https://www.24hseries.com{event.get('href')}"
+        full_title = event.find('span', 'col info').find('span', 'mediumTitle')
+        title = full_title.text.replace(full_title.find('span', 'sponsor').text, '').replace('\n', '').strip()
+        json_event = json.loads(event.find('script').text.replace('\n', '').replace('\t', ''))
+        start_date = datetime.strptime(json_event['startDate'], '%Y-%m-%d')
+        end_date = datetime.strptime(json_event['endDate'], '%Y-%m-%d')
+
+        if (len(schedule['24series']) == 0 or not any(event['title'] == title for event in schedule['24series'])) and end_date.date() >= datetime.today().date():
+            schedule['24series'].append({'url': url, 'added2cal': False, 'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'title': title, 'sub_events': []})
+        else:
+            for event in schedule['24series']:
+                if event['title'] == title and event['added2cal']:
+                    event['to_remove'] = False
+                    if event['start_date'] != start_date.isoformat() or event['end_date'] != end_date.isoformat():
+                        event['start_date'] = start_date.isoformat()
+                        event['end_date'] = end_date.isoformat()
+                        event['to_update'] = True
+                    break
+
+    return add_24series_sub_events(schedule)
+
+
+def add_24series_sub_events(schedule):
+    for event in track(schedule['24series'], description='Searching for sub events'):
+        if event['url'] is not None and event['url'] != '':
+            url = event['url']
+            soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+            if soup.find('div', 'entryWrapper') is not None:
+                for sub_event in soup.find('div', 'entryWrapper').find_all('div', 'entry'):
+                    title = sub_event.find('div', 'col smallTitle name').text.replace('\n', '').split('(')[0].strip()
+                    if event['title'].lower() in title.lower():
+                        title = title.split('-')[0].strip()
+                    date = sub_event.find('div', 'col smallTitle date').text.replace('\n', '').strip()
+                    start_time_str = sub_event.find('div', 'col smallTitle time').find('span', 'startTime').text.replace('\n', '').strip()
+                    end_time_str = sub_event.find('div', 'col smallTitle time').find('span', 'endTime').text.replace('\n', '').strip()
+                    if '--:--' not in start_time_str and '--:--' not in end_time_str:
+                        start_time = datetime.strptime(f'{date} {start_time_str} +0100', '%d %b %Y %H:%M %z')
+                        end_time = datetime.strptime(f'{date} {end_time_str} +0100', '%d %b %Y %H:%M %z')
+
+                        if len(event['sub_events']) == 0 or not any(sub_event['title'] == title for sub_event in event['sub_events']):
+                            event['sub_events'].append({'title': title, 'added2cal': False, 'start_time': start_time.isoformat(), 'end_time': end_time.isoformat()})
+                        else:
+                            for sub_event in event['sub_events']:
+                                if sub_event['title'] == title and sub_event['added2cal']:
+                                    sub_event['to_remove'] = False
+                                    if sub_event['start_time'] != start_time.isoformat() or sub_event['end_time'] != end_time.isoformat():
+                                        sub_event['start_time'] = start_time.isoformat()
+                                        sub_event['end_time'] = end_time.isoformat()
+                                        sub_event['to_update'] = True
+                                    break
+    return schedule
+
+
 ## Other endurance series function
 def update_endurance_schedule(serie, schedule):
     if serie not in schedule:
@@ -781,6 +846,8 @@ def main():
             schedule = update_wec_schedule(schedule)
         elif serie_name == 'eulemans' and serie['track']:
             schedule = update_eulemans_schedule(schedule)
+        elif serie_name == '24series' and serie['track']:
+            schedule = update_24series_schedule(schedule)
         elif serie_name == 'endurance':
             for sub_serie_name, sub_serie in serie['series'].items():
                 if sub_serie['track'] or serie['track_all']:
